@@ -48,29 +48,29 @@ export default function EditorReportCard() {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-slate-100">
-          <TrendingUp className="h-5 w-5 text-blue-400" />
-          Editor Performance Report
+    <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-lg hover:shadow-xl transition-all duration-200">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-3 text-slate-100">
+          <TrendingUp className="h-6 w-6 text-blue-400 flex-shrink-0" />
+          <span className="text-lg font-bold">Editor Performance Report</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-slate-800 border-slate-700">
-            <TabsTrigger value="week" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <TabsTrigger value="week" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-colors duration-200">
               Weekly View
             </TabsTrigger>
-            <TabsTrigger value="month" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <TabsTrigger value="month" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-colors duration-200">
               Monthly View
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="week" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <TabsContent value="week" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <h4 className="text-sm font-medium text-slate-300 mb-3">Daily Performance</h4>
-                <ResponsiveContainer width="100%" height={200}>
+                <h4 className="text-sm font-medium text-slate-300 mb-4">Daily Performance</h4>
+                <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={weeklyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
                     <XAxis dataKey="day" stroke="#94a3b8" />
@@ -91,8 +91,8 @@ export default function EditorReportCard() {
               </div>
               
               <div>
-                <h4 className="text-sm font-medium text-slate-300 mb-3">Efficiency Overview</h4>
-                <ResponsiveContainer width="100%" height={200}>
+                <h4 className="text-sm font-medium text-slate-300 mb-4">Efficiency Overview</h4>
+                <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
                       data={pieData}
@@ -120,17 +120,17 @@ export default function EditorReportCard() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               <h4 className="text-sm font-medium text-slate-300">Daily Breakdown</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
                 {weeklyData.map((day) => (
-                  <div key={day.day} className="p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+                  <div key={day.day} className="p-4 rounded-lg bg-slate-800/50 border border-slate-700 hover:bg-slate-800/70 transition-colors duration-200">
                     <div className="text-center">
-                      <div className="text-sm font-medium text-slate-300">{day.day}</div>
-                      <div className="text-lg font-bold text-slate-100">{day.achieved}/{day.target}</div>
+                      <div className="text-sm font-medium text-slate-300 mb-2">{day.day}</div>
+                      <div className="text-lg font-bold text-slate-100 mb-2">{day.achieved}/{day.target}</div>
                       <div className={`text-xs flex items-center justify-center gap-1 ${getEfficiencyColor(day.efficiency)}`}>
                         {getEfficiencyIcon(day.efficiency)}
-                        {day.efficiency}%
+                        <span>{day.efficiency}%</span>
                       </div>
                     </div>
                   </div>
@@ -139,11 +139,11 @@ export default function EditorReportCard() {
             </div>
           </TabsContent>
 
-          <TabsContent value="month" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <TabsContent value="month" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <h4 className="text-sm font-medium text-slate-300 mb-3">Weekly Performance</h4>
-                <ResponsiveContainer width="100%" height={200}>
+                <h4 className="text-sm font-medium text-slate-300 mb-4">Weekly Performance</h4>
+                <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
                     <XAxis dataKey="week" stroke="#94a3b8" />
@@ -164,17 +164,17 @@ export default function EditorReportCard() {
               </div>
               
               <div>
-                <h4 className="text-sm font-medium text-slate-300 mb-3">Monthly Summary</h4>
-                <div className="space-y-3">
+                <h4 className="text-sm font-medium text-slate-300 mb-4">Monthly Summary</h4>
+                <div className="space-y-4">
                   {monthlyData.map((week) => (
-                    <div key={week.week} className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+                    <div key={week.week} className="flex items-center justify-between p-4 rounded-lg bg-slate-800/50 border border-slate-700 hover:bg-slate-800/70 transition-colors duration-200">
                       <div>
                         <div className="font-medium text-slate-100">{week.week}</div>
                         <div className="text-sm text-slate-400">{week.achieved}/{week.target} videos</div>
                       </div>
                       <div className={`text-right ${getEfficiencyColor(week.efficiency)}`}>
                         <div className="text-lg font-bold">{week.efficiency}%</div>
-                        <div className="text-xs">{getEfficiencyIcon(week.efficiency)}</div>
+                        <div className="text-xs flex justify-end">{getEfficiencyIcon(week.efficiency)}</div>
                       </div>
                     </div>
                   ))}

@@ -25,13 +25,13 @@ export default function LeaderboardCard() {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="h-5 w-5 text-yellow-500" />
+        return <Trophy className="h-5 w-5 text-yellow-500 flex-shrink-0" />
       case 2:
-        return <Medal className="h-5 w-5 text-gray-400" />
+        return <Medal className="h-5 w-5 text-gray-400 flex-shrink-0" />
       case 3:
-        return <Medal className="h-5 w-5 text-amber-600" />
+        return <Medal className="h-5 w-5 text-amber-600 flex-shrink-0" />
       default:
-        return <span className="text-sm font-semibold text-slate-400">#{rank}</span>
+        return <span className="text-sm font-semibold text-slate-400 flex-shrink-0">#{rank}</span>
     }
   }
 
@@ -51,30 +51,30 @@ export default function LeaderboardCard() {
   const displayedEditors = isExpanded ? mockEditors : mockEditors.slice(0, 5)
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-slate-100">
-          <Trophy className="h-5 w-5 text-yellow-500" />
-          Top Editors - Current Month
+    <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-lg hover:shadow-xl transition-all duration-200">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-3 text-slate-100">
+          <Trophy className="h-6 w-6 text-yellow-500 flex-shrink-0" />
+          <span className="text-lg font-bold">Top Editors - Current Month</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="space-y-2">
+      <CardContent className="space-y-4">
+        <div className="space-y-3">
           {displayedEditors.map((editor) => (
             <div
               key={editor.id}
-              className={`flex items-center justify-between p-3 rounded-lg border ${getRankColor(editor.rank)} transition-all hover:scale-[1.02]`}
+              className={`flex items-center justify-between p-4 rounded-lg border transition-all duration-200 hover:scale-[1.02] ${getRankColor(editor.rank)}`}
             >
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-700 text-slate-200 text-sm font-semibold">
+              <div className="flex items-center gap-4 min-w-0 flex-1">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-700 text-slate-200 text-sm font-semibold flex-shrink-0">
                   {editor.avatar}
                 </div>
-                <div>
-                  <div className="font-medium text-slate-100">{editor.name}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-slate-100 truncate">{editor.name}</div>
                   <div className="text-sm text-slate-400">{editor.videos} videos</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {getRankIcon(editor.rank)}
               </div>
             </div>
@@ -84,16 +84,16 @@ export default function LeaderboardCard() {
         <Button
           variant="ghost"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full text-slate-300 hover:text-slate-100 hover:bg-slate-700/50"
+          className="w-full text-slate-300 hover:text-slate-100 hover:bg-slate-700/50 transition-colors duration-200 py-3"
         >
           {isExpanded ? (
             <>
-              <ChevronUp className="h-4 w-4 mr-2" />
+              <ChevronUp className="h-4 w-4 mr-2 flex-shrink-0" />
               Show Less
             </>
           ) : (
             <>
-              <ChevronDown className="h-4 w-4 mr-2" />
+              <ChevronDown className="h-4 w-4 mr-2 flex-shrink-0" />
               View All ({mockEditors.length})
             </>
           )}

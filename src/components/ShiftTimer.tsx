@@ -70,27 +70,27 @@ export default function ShiftTimer() {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-slate-100">
-          <Clock className="h-5 w-5 text-blue-400" />
-          Shift Timer
+    <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-lg hover:shadow-xl transition-all duration-200">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-3 text-slate-100">
+          <Clock className="h-6 w-6 text-blue-400 flex-shrink-0" />
+          <span className="text-lg font-bold">Shift Timer</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="text-center">
-          <div className="text-3xl font-mono font-bold text-blue-400 mb-2">
+          <div className="text-4xl font-mono font-bold text-blue-400 mb-3">
             {formatISTTime(currentTime)}
           </div>
           <div className="text-sm text-slate-300 flex items-center justify-center gap-2">
-            <Calendar className="h-4 w-4" />
-            {formatISTDate(currentTime)}
+            <Calendar className="h-4 w-4 flex-shrink-0" />
+            <span>{formatISTDate(currentTime)}</span>
           </div>
         </div>
         
-        <div className="text-center pt-2 border-t border-slate-700">
-          <div className="text-sm text-slate-400 mb-1">Time until shift ends</div>
-          <div className="text-xl font-mono font-semibold text-green-400">
+        <div className="text-center pt-4 border-t border-slate-700">
+          <div className="text-sm text-slate-400 mb-2">Time until shift ends</div>
+          <div className="text-2xl font-mono font-semibold text-green-400">
             {timeUntilShift}
           </div>
         </div>
