@@ -1,61 +1,38 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-
-// Routes that require authentication
-const protectedRoutes = [
-  '/dashboard',
-  '/daily-entry',
-  '/manage',
-  '/export'
-];
-
-// Routes that are public
-const publicRoutes = [
-  '/',
-  '/login',
-  '/signup',
-  '/api/auth/login',
-  '/api/auth/signup'
-];
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Check if it's a protected route
-  const isProtectedRoute = protectedRoutes.some(route => 
-    pathname.startsWith(route)
-  );
-
-  // Check if it's a public route
-  const isPublicRoute = publicRoutes.some(route => 
-    pathname.startsWith(route)
-  );
-
-      // If it's a protected route, check for authentication
-    if (isProtectedRoute) {
-      // For now, allow access to protected routes during development
-      // TODO: Implement proper token verification when auth is ready
-      return NextResponse.next();
-    }
-
-  // If it's a public route, allow access
-  if (isPublicRoute) {
-    return NextResponse.next();
+  // Only apply middleware to API routes
+  if (!request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.next()
   }
 
-  // For any other routes, allow access (you can modify this behavior)
-  return NextResponse.next();
+  // Skip auth middleware for auth endpoints
+  if (request.nextUrl.pathname.startsWith('/api/auth/')) {
+    return NextResponse.next()
+  }
+
+  // For all other API routes, check for valid token
+  const token = request.cookies.get('accessToken')?.value || 
+                request.headers.get('authorization')?.replace('Bearer ', '')
+
+  if (!token) {
+    return NextResponse.json(
+      { error: 'Access token required' },
+      { status: 401 }
+    )
+  }
+
+  // TODO: Add proper token verification here
+  // For now, just check if token exists
+  // In production, you should verify the JWT token
+  
+  return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/api/:path*',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
-};
+}
