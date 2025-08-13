@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, email, password, role = 'editor' } = body;
 
-    // Validation
+    // Basic validation
     if (!name || !email || !password) {
       return NextResponse.json(
         { error: 'Name, email, and password are required' },
@@ -17,16 +17,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (password.length < 6) {
+    if (!['admin', 'manager', 'editor', 'viewer'].includes(role)) {
       return NextResponse.json(
-        { error: 'Password must be at least 6 characters long' },
-        { status: 400 }
-      );
-    }
-
-    if (!['admin', 'editor', 'viewer'].includes(role)) {
-      return NextResponse.json(
-        { error: 'Invalid role. Must be admin, editor, or viewer' },
+        { error: 'Invalid role. Must be admin, manager, editor, or viewer' },
         { status: 400 }
       );
     }
@@ -74,7 +67,7 @@ export async function POST(request: NextRequest) {
     if (error.name === 'ValidationError') {
       const validationErrors = Object.values(error.errors).map((err: any) => err.message);
       return NextResponse.json(
-        { error: 'Validation failed', details: validationErrors },
+        { error: validationErrors[0] || 'Validation failed' },
         { status: 400 }
       );
     }

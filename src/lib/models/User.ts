@@ -5,7 +5,7 @@ export interface IUser extends mongoose.Document {
   name: string;
   email: string;
   password: string;
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'admin' | 'manager' | 'editor' | 'viewer';
   isActive: boolean;
   lastLogin?: Date;
   createdAt: Date;
@@ -26,17 +26,29 @@ const userSchema = new mongoose.Schema<IUser>({
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address']
   },
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters'],
+    minlength: [8, 'Password must be at least 8 characters long'],
+    validate: {
+      validator: function(password: string) {
+        // Check for at least one uppercase, lowercase, number, and special character
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumbers = /\d/.test(password);
+        const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+        
+        return hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
+      },
+      message: 'Password must contain uppercase, lowercase, numbers, and special characters'
+    },
     select: false // Don't include password in queries by default
   },
   role: {
     type: String,
-    enum: ['admin', 'editor', 'viewer'],
+    enum: ['admin', 'manager', 'editor', 'viewer'],
     default: 'editor'
   },
   isActive: {

@@ -7,7 +7,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'admin' | 'manager' | 'editor' | 'viewer';
   lastLogin?: string;
 }
 

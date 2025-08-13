@@ -45,31 +45,26 @@ export default function StatsCards({ stats }: StatsCardsProps) {
       <StatCard
         title="Total Videos"
         value={stats.totalVideos}
-        change={{ value: 12, type: 'positive' }}
         icon="🎥"
       />
       <StatCard
         title="Total Hours"
         value={`${stats.totalHours}h`}
-        change={{ value: 8, type: 'positive' }}
         icon="⏰"
       />
       <StatCard
         title="Avg Productivity"
         value={`${stats.averageProductivity}%`}
-        change={{ value: 5, type: 'positive' }}
         icon="📊"
       />
       <StatCard
         title="Target Achievement"
         value={`${stats.targetAchievement}%`}
-        change={{ value: -2, type: 'negative' }}
         icon="🎯"
       />
       <StatCard
         title="Consistency Score"
         value={`${stats.consistencyScore}%`}
-        change={{ value: 15, type: 'positive' }}
         icon="📈"
       />
     </div>
