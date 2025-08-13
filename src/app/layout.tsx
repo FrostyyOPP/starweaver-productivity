@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import "./globals.css";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
-  title: "Starweaver Productivity API",
-  description: "Backend API for productivity management system",
+  title: "Starweaver Productivity",
+  description: "Track your productivity, achieve your goals, and unlock your potential",
 };
 
 export default function RootLayout({
@@ -12,7 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="antialiased">
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }
