@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Team from '@/lib/models/Team';
-import User from '@/lib/models/User';
 import { verifyToken } from '@/lib/jwt';
+
+// Type the Team model properly
+const TeamModel = Team as any;
 
 // GET /api/teams - Get user's teams
 export async function GET(request: NextRequest) {
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
     const decoded = verifyToken(token);
 
     // Get user's teams
-    const teams = await Team.getUserTeams(decoded.userId);
+    const teams = await TeamModel.getUserTeams(decoded.userId);
 
     return NextResponse.json({ teams });
 
@@ -80,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if team name already exists
-    const existingTeam = await Team.findOne({ name });
+    const existingTeam = await TeamModel.findOne({ name });
     if (existingTeam) {
       return NextResponse.json(
         { error: 'Team name already exists' },
@@ -89,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new team
-    const team = new Team({
+    const team = new TeamModel({
       name,
       description: description || '',
       members: [decoded.userId],
@@ -109,7 +111,7 @@ export async function POST(request: NextRequest) {
     await team.save();
 
     // Populate team with member details
-    const populatedTeam = await Team.getTeamWithMembers(team._id.toString());
+    const populatedTeam = await TeamModel.getTeamWithMembers(team._id.toString());
 
     return NextResponse.json({
       message: 'Team created successfully',

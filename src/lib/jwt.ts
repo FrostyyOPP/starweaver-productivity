@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 export interface JWTPayload {
@@ -9,12 +9,10 @@ export interface JWTPayload {
   role: string;
 }
 
-export function generateToken(payload: JWTPayload): string {
+export function generateToken(payload: any): string {
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-    issuer: 'starweaver-productivity',
-    audience: 'starweaver-users'
-  });
+    expiresIn: JWT_EXPIRES_IN
+  } as jwt.SignOptions);
 }
 
 export function verifyToken(token: string): JWTPayload {

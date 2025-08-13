@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       authStorage.setToken(response.accessToken);
       authStorage.setUser(response.user);
-      setUser(response.user);
+      setUser(response.user as User);
     } catch (error) {
       throw error;
     } finally {
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       authStorage.setToken(response.accessToken);
       authStorage.setUser(response.user);
-      setUser(response.user);
+      setUser(response.user as User);
     } catch (error) {
       throw error;
     } finally {
@@ -103,12 +103,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response: AuthResponse = await authAPI.refreshToken();
       authStorage.setToken(response.accessToken);
       authStorage.setUser(response.user);
-      setUser(response.user);
+      setUser(response.user as User);
     } catch (error) {
       console.error('Token refresh error:', error);
       authStorage.clear();
       setUser(null);
-      throw error;
     }
   };
 

@@ -1,22 +1,24 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/starweaver-productivity';
+const MONGODB_URI = process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
 }
 
-declare global {
-  var mongoose: {
-    conn: any;
-    promise: any;
-  } | undefined;
+interface Cached {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
 }
 
-let cached = global.mongoose;
+declare global {
+  var mongoose: { cached: Cached | undefined };
+}
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+let cached: Cached = global.mongoose?.cached || { conn: null, promise: null };
+
+if (!global.mongoose) {
+  global.mongoose = { cached };
 }
 
 async function connectDB() {

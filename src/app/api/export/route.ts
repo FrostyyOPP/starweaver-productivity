@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Prepare data for export
-    const exportData = {
+    const exportData: any = {
       user: {
         id: decoded.userId,
         email: decoded.email,

@@ -110,8 +110,8 @@ teamSchema.methods.addMember = function(userId: mongoose.Types.ObjectId) {
 
 // Method to remove member
 teamSchema.methods.removeMember = function(userId: mongoose.Types.ObjectId) {
-  this.members = this.members.filter(member => !member.equals(userId));
-  this.admins = this.admins.filter(admin => !admin.equals(userId));
+  this.members = this.members.filter((member: mongoose.Types.ObjectId) => !member.equals(userId));
+  this.admins = this.admins.filter((admin: mongoose.Types.ObjectId) => !admin.equals(userId));
   return this.save();
 };
 
@@ -126,7 +126,7 @@ teamSchema.methods.promoteToAdmin = function(userId: mongoose.Types.ObjectId) {
 
 // Method to demote admin
 teamSchema.methods.demoteAdmin = function(userId: mongoose.Types.ObjectId) {
-  this.admins = this.admins.filter(admin => !admin.equals(userId));
+  this.admins = this.admins.filter((admin: mongoose.Types.ObjectId) => !admin.equals(userId));
   return this.save();
 };
 
@@ -144,4 +144,10 @@ teamSchema.statics.getTeamWithMembers = function(teamId: string) {
     .populate('admins', 'name email role');
 };
 
-export default mongoose.models.Team || mongoose.model<ITeam>('Team', teamSchema);
+// Add the static methods to the interface
+interface ITeamModel extends mongoose.Model<ITeam> {
+  getUserTeams(userId: string): Promise<ITeam[]>;
+  getTeamWithMembers(teamId: string): Promise<ITeam | null>;
+}
+
+export default mongoose.models.Team || mongoose.model<ITeam, ITeamModel>('Team', teamSchema);

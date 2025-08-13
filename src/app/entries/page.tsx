@@ -18,8 +18,8 @@ export default function EntriesPage() {
     try {
       setLoading(true);
       setError('');
-      const data = await entriesAPI.getEntries({ limit: 20, sortOrder: 'desc' });
-      setEntries(data.entries || []);
+      const data = await entriesAPI.getEntries();
+      setEntries((data as any).entries || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load entries');
     } finally {
@@ -417,7 +417,7 @@ function EntryCard({ entry, onDelete }: { entry: Entry; onDelete: () => void }) 
             </div>
           )}
 
-          {(entry.challenges?.length > 0 || entry.achievements?.length > 0) && (
+          {(entry.challenges && entry.challenges.length > 0) || (entry.achievements && entry.achievements.length > 0) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {entry.challenges && entry.challenges.length > 0 && (
                 <div>

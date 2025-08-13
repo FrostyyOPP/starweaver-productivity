@@ -18,12 +18,8 @@ export default function AnalyticsPage() {
     try {
       setLoading(true);
       setError('');
-      const data = await analyticsAPI.getAnalytics({ 
-        period, 
-        includeTrends: true, 
-        includeInsights: true 
-      });
-      setAnalyticsData(data);
+      const data = await analyticsAPI.getAnalytics({ period, includeTrends: true, includeInsights: true });
+      setAnalyticsData(data as AnalyticsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load analytics data');
     } finally {

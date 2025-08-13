@@ -6,10 +6,11 @@ import { verifyToken } from '@/lib/jwt';
 // GET /api/entries/[id] - Get a specific entry
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
+    const { id } = await params;
 
     // Get token from authorization header
     const authHeader = request.headers.get('authorization');
@@ -24,7 +25,7 @@ export async function GET(
     const decoded = verifyToken(token);
 
     const entry = await Entry.findOne({
-      _id: params.id,
+      _id: id,
       userId: decoded.userId
     });
 
@@ -57,10 +58,11 @@ export async function GET(
 // PUT /api/entries/[id] - Update a specific entry
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
+    const { id } = await params;
 
     // Get token from authorization header
     const authHeader = request.headers.get('authorization');
@@ -90,7 +92,7 @@ export async function PUT(
 
     // Find entry and verify ownership
     const entry = await Entry.findOne({
-      _id: params.id,
+      _id: id,
       userId: decoded.userId
     });
 
@@ -112,6 +114,17 @@ export async function PUT(
     if (challenges !== undefined) entry.challenges = challenges;
     if (achievements !== undefined) entry.achievements = achievements;
     if (isCompleted !== undefined) entry.isCompleted = isCompleted;
+
+    // Validate the entry before saving
+    try {
+      await entry.validate();
+    } catch (validationError: any) {
+      console.error('Validation error:', validationError);
+      return NextResponse.json(
+        { error: 'Validation failed', details: validationError.message },
+        { status: 400 }
+      );
+    }
 
     await entry.save();
 
@@ -148,10 +161,11 @@ export async function PUT(
 // DELETE /api/entries/[id] - Delete a specific entry
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
+    const { id } = await params;
 
     // Get token from authorization header
     const authHeader = request.headers.get('authorization');
@@ -167,7 +181,7 @@ export async function DELETE(
 
     // Find entry and verify ownership
     const entry = await Entry.findOne({
-      _id: params.id,
+      _id: id,
       userId: decoded.userId
     });
 
@@ -178,7 +192,7 @@ export async function DELETE(
       );
     }
 
-    await Entry.findByIdAndDelete(params.id);
+    await Entry.findByIdAndDelete(id);
 
     return NextResponse.json({
       message: 'Entry deleted successfully'

@@ -23,13 +23,11 @@ const entrySchema = new mongoose.Schema<IEntry>({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'User ID is required'],
-    index: true
+    required: [true, 'User ID is required']
   },
   date: {
     type: Date,
-    required: [true, 'Date is required'],
-    index: true
+    required: [true, 'Date is required']
   },
   shiftStart: {
     type: Date,
@@ -99,6 +97,10 @@ const entrySchema = new mongoose.Schema<IEntry>({
 entrySchema.pre('save', function(next) {
   if (this.isModified('videosCompleted') || this.isModified('targetVideos')) {
     this.productivityScore = Math.round((this.videosCompleted / this.targetVideos) * 100);
+    // Cap productivity score at 100%
+    if (this.productivityScore > 100) {
+      this.productivityScore = 100;
+    }
   }
   next();
 });
