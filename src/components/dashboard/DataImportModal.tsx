@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Users, CheckCircle, AlertCircle, X, User, Database } from 'lucide-react';
+import { Upload, FileText, Users, CheckCircle, AlertCircle, X, User, Database, Eye } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface UserImportData {
@@ -349,12 +349,14 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden border border-gray-100">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center space-x-3">
-            <Upload className="w-6 h-6 text-blue-600" />
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Upload className="w-5 h-5 text-white" />
+            </div>
             <h2 className="text-2xl font-bold text-gray-900">Import Data</h2>
           </div>
           <button
@@ -362,9 +364,9 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
               resetModal();
               onClose();
             }}
-            className="text-gray-400 hover:text-gray-600"
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
           >
-            <X className="w-6 h-6" />
+            <X className="w-4 h-4 text-gray-600" />
           </button>
         </div>
 
@@ -374,31 +376,35 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
             <div className="space-y-6">
               {importType === 'select' && (
                 <div className="text-center">
-                  <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                    <Upload className="w-8 h-8 text-blue-600" />
+                  <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-6">
+                    <Upload className="w-10 h-10 text-blue-600" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Choose Import Type</h3>
-                  <p className="text-gray-600 mb-6">
-                    Select the type of data you want to import
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Choose Import Type</h3>
+                  <p className="text-gray-600 mb-8 text-lg">
+                    Select the type of data you want to import into the system
                   </p>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                     <button
                       onClick={() => setImportType('user')}
-                      className="p-6 border-2 border-dashed border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-center"
+                      className="group p-8 border-2 border-dashed border-blue-300 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 text-center transform hover:scale-105 hover:shadow-lg"
                     >
-                      <User className="w-12 h-12 text-blue-600 mx-auto mb-3" />
-                      <h4 className="font-semibold text-gray-900 mb-2">User Import</h4>
-                      <p className="text-sm text-gray-600">Import users with their details, roles, and passwords</p>
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors">
+                        <User className="w-8 h-8 text-blue-600" />
+                      </div>
+                      <h4 className="text-xl font-bold text-gray-900 mb-3">User Import</h4>
+                      <p className="text-gray-600 leading-relaxed">Import users with their details, roles, and passwords. Create team members and assign access levels.</p>
                     </button>
                     
                     <button
                       onClick={() => setImportType('data')}
-                      className="p-6 border-2 border-dashed border-green-300 rounded-lg hover:bg-green-50 transition-colors text-center"
+                      className="group p-8 border-2 border-dashed border-green-300 rounded-xl hover:border-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 transition-all duration-300 text-center transform hover:scale-105 hover:shadow-lg"
                     >
-                      <Database className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                      <h4 className="font-semibold text-gray-900 mb-2">Data Import</h4>
-                      <p className="text-sm text-gray-600">Import productivity data for existing users</p>
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition-colors">
+                        <Database className="w-8 h-8 text-green-600" />
+                      </div>
+                      <h4 className="text-xl font-bold text-gray-900 mb-3">Data Import</h4>
+                      <p className="text-gray-600 leading-relaxed">Import productivity data for existing users. Track video completion and work progress.</p>
                     </button>
                   </div>
                 </div>
@@ -422,7 +428,7 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
                   </div>
 
                   {/* File Upload */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center hover:border-blue-400 transition-colors">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -430,45 +436,89 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
                       onChange={handleFileUpload}
                       className="hidden"
                     />
+                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Upload className="w-10 h-10 text-blue-600" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Upload Your File</h4>
+                    <p className="text-gray-600 mb-6">
+                      Drag and drop your file here, or click the button below
+                    </p>
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       Choose File
                     </button>
-                    <p className="text-sm text-gray-500 mt-2">
-                      {file ? `Selected: ${file.name}` : 'No file selected'}
-                    </p>
+                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600">
+                        {file ? (
+                          <span className="text-green-600 font-medium">✓ {file.name}</span>
+                        ) : (
+                          'No file selected'
+                        )}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* File Format Instructions */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Expected Data Format:</h4>
-                                         {importType === 'user' ? (
-                       <div className="text-sm text-gray-600 space-y-1">
-                         <p>• <strong>users:</strong> Array of users with name, email, password, role</p>
-                         <p>• <strong>role:</strong> Must be admin, manager, editor, or viewer</p>
-                         <p>• <strong>password:</strong> Minimum 8 characters</p>
-                         <p>• <strong>Excel Support:</strong> Upload Excel files with columns: Name, Email, Password, Role</p>
-                       </div>
-                                         ) : (
-                       <div className="text-sm text-gray-600 space-y-1">
-                         <p>• <strong>productivityData:</strong> Array of entries with userEmail, date, videosCompleted, videoCategory, notes</p>
-                         <p>• <strong>userEmail:</strong> Must match existing user email</p>
-                         <p>• <strong>date:</strong> Format: YYYY-MM-DD</p>
-                         <p>• <strong>videoCategory:</strong> Optional - Course Video, Marketing Video, or Leave (defaults to Course Video)</p>
-                         <p>• <strong>Excel Support:</strong> Upload Excel files with columns: User Email, Date, Videos Completed, Category, Notes</p>
-                       </div>
-                     )}
+                                    {/* File Format Instructions */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                    <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                      <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                      Expected Data Format
+                    </h4>
+                    {importType === 'user' ? (
+                      <div className="text-sm text-gray-700 space-y-2">
+                        <div className="flex items-start space-x-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <p><strong>users:</strong> Array of users with name, email, password, role</p>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <p><strong>role:</strong> Must be admin, manager, editor, or viewer</p>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <p><strong>password:</strong> Minimum 8 characters</p>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <p><strong>Excel Support:</strong> Upload Excel files with columns: Name, Email, Password, Role</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-700 space-y-2">
+                        <div className="flex items-start space-x-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <p><strong>productivityData:</strong> Array of entries with userEmail, date, videosCompleted, videoCategory, notes</p>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <p><strong>userEmail:</strong> Must match existing user email</p>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <p><strong>date:</strong> Format: YYYY-MM-DD</p>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <p><strong>videoCategory:</strong> Optional - Course Video, Marketing Video, or Leave (defaults to Course Video)</p>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <p><strong>Excel Support:</strong> Upload Excel files with columns: User Email, Date, Videos Completed, Category, Notes</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Back Button */}
                   <div className="text-center">
                     <button
                       onClick={() => setImportType('select')}
-                      className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="px-6 py-3 text-gray-700 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 flex items-center space-x-2 mx-auto"
                     >
-                      ← Back to Import Type Selection
+                      <span>←</span>
+                      <span>Back to Import Type Selection</span>
                     </button>
                   </div>
                 </>
@@ -494,11 +544,11 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
           {step === 'preview' && (
             <div className="space-y-6">
               <div className="text-center">
-                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
+                <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mb-6">
+                  <CheckCircle className="w-10 h-10 text-green-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Data Preview</h3>
-                <p className="text-gray-600 mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Data Preview</h3>
+                <p className="text-gray-600 mb-8 text-lg">
                   Review the data before importing.
                   {importType === 'user' 
                     ? ' This will create new user accounts with the specified roles and passwords.'
@@ -508,28 +558,32 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
               </div>
 
               {importType === 'user' && userImportData && (
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-3 flex items-center space-x-2">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                  <h4 className="font-semibold text-blue-900 mb-4 flex items-center space-x-2">
                     <Users className="w-5 h-5" />
                     <span>Users to Import ({userImportData.users.length})</span>
                   </h4>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto bg-white rounded-lg border border-blue-200">
                     <table className="min-w-full text-sm">
                       <thead>
-                        <tr className="border-b border-blue-200">
-                          <th className="text-left py-2 px-3">Name</th>
-                          <th className="text-left py-2 px-3">Email</th>
-                          <th className="text-left py-2 px-3">Role</th>
-                          <th className="text-left py-2 px-3">Password</th>
+                        <tr className="bg-blue-50">
+                          <th className="text-left py-3 px-4 font-semibold text-blue-900">Name</th>
+                          <th className="text-left py-3 px-4 font-semibold text-blue-900">Email</th>
+                          <th className="text-left py-3 px-4 font-semibold text-blue-900">Role</th>
+                          <th className="text-left py-3 px-4 font-semibold text-blue-900">Password</th>
                         </tr>
                       </thead>
                       <tbody>
                         {userImportData.users.map((user, index) => (
-                          <tr key={index} className="border-b border-blue-100">
-                            <td className="py-2 px-3">{user.name}</td>
-                            <td className="py-2 px-3">{user.email}</td>
-                            <td className="py-2 px-3 capitalize">{user.role}</td>
-                            <td className="py-2 px-3">••••••••</td>
+                          <tr key={index} className="border-b border-blue-100 hover:bg-blue-50 transition-colors">
+                            <td className="py-3 px-4 font-medium">{user.name}</td>
+                            <td className="py-3 px-4 text-blue-600">{user.email}</td>
+                            <td className="py-3 px-4">
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium capitalize">
+                                {user.role}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-gray-500">••••••••</td>
                           </tr>
                         ))}
                       </tbody>
@@ -538,36 +592,44 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
                 </div>
               )}
 
-              {importType === 'data' && dataImportData && (
-                <div className="bg-green-50 rounded-lg p-4">
-                  <h4 className="font-medium text-green-900 mb-3 flex items-center space-x-2">
+                            {importType === 'data' && dataImportData && (
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                  <h4 className="font-semibold text-green-900 mb-4 flex items-center space-x-2">
                     <FileText className="w-5 h-5" />
                     <span>Productivity Data to Import ({dataImportData.productivityData.length} entries)</span>
                   </h4>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto bg-white rounded-lg border border-green-200">
                     <table className="min-w-full text-sm">
                       <thead>
-                        <tr className="border-b border-green-200">
-                          <th className="text-left py-2 px-3">User Email</th>
-                          <th className="text-left py-2 px-3">Date</th>
-                          <th className="text-left py-2 px-3">Videos</th>
-                          <th className="text-left py-2 px-3">Category</th>
-                          <th className="text-left py-2 px-3">Notes</th>
+                        <tr className="bg-green-50">
+                          <th className="text-left py-3 px-4 font-semibold text-green-900">User Email</th>
+                          <th className="text-left py-3 px-4 font-semibold text-green-900">Date</th>
+                          <th className="text-left py-3 px-4 font-semibold text-green-900">Videos</th>
+                          <th className="text-left py-3 px-4 font-semibold text-green-900">Category</th>
+                          <th className="text-left py-3 px-4 font-semibold text-green-900">Notes</th>
                         </tr>
                       </thead>
                       <tbody>
                         {dataImportData.productivityData.slice(0, 10).map((entry, index) => (
-                          <tr key={index} className="border-b border-green-100">
-                            <td className="py-2 px-3">{entry.userEmail}</td>
-                            <td className="py-2 px-3">{entry.date}</td>
-                            <td className="py-2 px-3">{entry.videosCompleted}</td>
-                            <td className="py-2 px-3">{entry.videoCategory || 'Course Video'}</td>
-                            <td className="py-2 px-3">{entry.notes || '-'}</td>
+                          <tr key={index} className="border-b border-green-100 hover:bg-green-50 transition-colors">
+                            <td className="py-3 px-4 text-blue-600 font-medium">{entry.userEmail}</td>
+                            <td className="py-3 px-4">{entry.date}</td>
+                            <td className="py-3 px-4">
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                {entry.videosCompleted}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                {entry.videoCategory || 'Course Video'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-gray-600">{entry.notes || '-'}</td>
                           </tr>
                         ))}
                         {dataImportData.productivityData.length > 10 && (
                           <tr>
-                            <td colSpan={5} className="py-2 px-3 text-center text-gray-500">
+                            <td colSpan={5} className="py-3 px-4 text-center text-gray-500 bg-gray-50">
                               ... and {dataImportData.productivityData.length - 10} more entries
                             </td>
                           </tr>
@@ -579,18 +641,26 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
               )}
 
               {/* Action Buttons */}
-              <div className="flex justify-end space-x-3 pt-4">
+              <div className="flex justify-end space-x-4 pt-6">
                 <button
                   onClick={() => setStep('upload')}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="px-6 py-3 text-gray-700 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-300"
                 >
-                  Back to Upload
+                  ← Back to Upload
                 </button>
                 <button
                   onClick={handleImport}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  disabled={isImporting}
+                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
-                  Confirm Import
+                  {isImporting ? (
+                    <span className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Importing...</span>
+                    </span>
+                  ) : (
+                    'Confirm Import'
+                  )}
                 </button>
               </div>
             </div>
