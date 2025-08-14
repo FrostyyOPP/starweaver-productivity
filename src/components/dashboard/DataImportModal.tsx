@@ -89,6 +89,10 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
             const worksheet = workbook.Sheets[sheetName];
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
             
+            // Debug logging
+            console.log('Excel headers found:', jsonData[0]);
+            console.log('Excel data rows:', jsonData.length - 1);
+            
             // Convert Excel data to expected format
             const users = convertExcelToUsers(jsonData);
             resolve({ users });
@@ -120,6 +124,10 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            // Debug logging
+            console.log('Excel headers found:', jsonData[0]);
+            console.log('Excel data rows:', jsonData.length - 1);
             
             // Convert Excel data to expected format
             const productivityData = convertExcelToProductivityData(jsonData);
@@ -203,18 +211,30 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
     const headers = excelData[0];
     const dataRows = excelData.slice(1);
 
-    // Find column indices
+    // Find column indices with more flexible matching
     const nameIndex = headers.findIndex((h: string) => 
       h?.toString().toLowerCase().includes('name'));
     const emailIndex = headers.findIndex((h: string) => 
       h?.toString().toLowerCase().includes('email'));
     const passwordIndex = headers.findIndex((h: string) => 
-      h?.toString().toLowerCase().includes('password'));
+      h?.toString().toLowerCase().includes('password') || 
+      h?.toString().toLowerCase().includes('pasword') || // Handle typo
+      h?.toString().toLowerCase().includes('pass') ||
+      h?.toString().toLowerCase().includes('pwd'));
     const roleIndex = headers.findIndex((h: string) => 
-      h?.toString().toLowerCase().includes('role'));
+      h?.toString().toLowerCase().includes('role') ||
+      h?.toString().toLowerCase().includes('access') ||
+      h?.toString().toLowerCase().includes('level'));
 
-    if (nameIndex === -1 || emailIndex === -1 || passwordIndex === -1 || roleIndex === -1) {
-      throw new Error('Excel file must have columns: Name, Email, Password, Role');
+    // Provide more helpful error messages
+    const missingColumns = [];
+    if (nameIndex === -1) missingColumns.push('Name');
+    if (emailIndex === -1) missingColumns.push('Email');
+    if (passwordIndex === -1) missingColumns.push('Password (or similar like "Pasword", "Pass", "Pwd")');
+    if (roleIndex === -1) missingColumns.push('Role (or similar like "Access", "Level")');
+
+    if (missingColumns.length > 0) {
+      throw new Error(`Excel file missing required columns: ${missingColumns.join(', ')}. Found headers: ${headers.join(', ')}`);
     }
 
     return dataRows
@@ -236,20 +256,40 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
     const headers = excelData[0];
     const dataRows = excelData.slice(1);
 
-    // Find column indices
+    // Find column indices with more flexible matching
     const userEmailIndex = headers.findIndex((h: string) => 
-      h?.toString().toLowerCase().includes('email') || h?.toString().toLowerCase().includes('user'));
+      h?.toString().toLowerCase().includes('email') || 
+      h?.toString().toLowerCase().includes('user') ||
+      h?.toString().toLowerCase().includes('useremail'));
     const dateIndex = headers.findIndex((h: string) => 
-      h?.toString().toLowerCase().includes('date'));
+      h?.toString().toLowerCase().includes('date') ||
+      h?.toString().toLowerCase().includes('workdate') ||
+      h?.toString().toLowerCase().includes('entrydate'));
     const videosIndex = headers.findIndex((h: string) => 
-      h?.toString().toLowerCase().includes('video') || h?.toString().toLowerCase().includes('number'));
+      h?.toString().toLowerCase().includes('video') || 
+      h?.toString().toLowerCase().includes('number') ||
+      h?.toString().toLowerCase().includes('videos') ||
+      h?.toString().toLowerCase().includes('completed') ||
+      h?.toString().toLowerCase().includes('count'));
     const categoryIndex = headers.findIndex((h: string) => 
-      h?.toString().toLowerCase().includes('category') || h?.toString().toLowerCase().includes('type'));
+      h?.toString().toLowerCase().includes('category') || 
+      h?.toString().toLowerCase().includes('type') ||
+      h?.toString().toLowerCase().includes('videocategory') ||
+      h?.toString().toLowerCase().includes('videotype'));
     const notesIndex = headers.findIndex((h: string) => 
-      h?.toString().toLowerCase().includes('note') || h?.toString().toLowerCase().includes('remark'));
+      h?.toString().toLowerCase().includes('note') || 
+      h?.toString().toLowerCase().includes('remark') ||
+      h?.toString().toLowerCase().includes('comment') ||
+      h?.toString().toLowerCase().includes('description'));
 
-    if (userEmailIndex === -1 || dateIndex === -1 || videosIndex === -1) {
-      throw new Error('Excel file must have columns: User Email, Date, Videos Completed');
+    // Provide more helpful error messages
+    const missingColumns = [];
+    if (userEmailIndex === -1) missingColumns.push('User Email (or similar like "Email", "User", "UserEmail")');
+    if (dateIndex === -1) missingColumns.push('Date (or similar like "WorkDate", "EntryDate")');
+    if (videosIndex === -1) missingColumns.push('Videos Completed (or similar like "Videos", "Number", "Count", "Completed")');
+
+    if (missingColumns.length > 0) {
+      throw new Error(`Excel file missing required columns: ${missingColumns.join(', ')}. Found headers: ${headers.join(', ')}`);
     }
 
     return dataRows
