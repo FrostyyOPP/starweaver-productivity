@@ -241,6 +241,24 @@ const AdminProductivityCharts: React.FC<AdminProductivityChartsProps> = ({
       return [];
     }
 
+    // Debug: Show first few entries structure
+    console.log('📋 Sample entries structure:', entries.slice(0, 3).map(entry => ({
+      id: entry._id,
+      date: entry.date,
+      userId: entry.userId,
+      videosCompleted: entry.videosCompleted,
+      productivityScore: entry.productivityScore,
+      userName: entry.userName
+    })));
+
+    // Debug: Show team members structure
+    console.log('👥 Team members structure:', teamMembers?.slice(0, 3).map(member => ({
+      id: member._id,
+      name: member.name,
+      email: member.email,
+      role: member.role
+    })));
+
     if (period === 'last-3-weeks') {
       const weekData = createWeekBasedData();
       console.log('📅 Week-based data:', weekData);
