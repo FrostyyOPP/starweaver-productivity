@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
+import connectDB from '@/lib/db';
 import { verifyToken } from '@/lib/jwt';
 import Team from '@/lib/models/Team';
 import User from '@/lib/models/User';
