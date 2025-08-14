@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   LineChart,
   Line,
@@ -19,6 +19,7 @@ import {
   Cell
 } from 'recharts';
 import { TrendingUp, BarChart3, PieChart as PieChartIcon, Calendar } from 'lucide-react';
+import ExportButton from './ExportButton';
 
 interface ChartData {
   date: string;
@@ -38,6 +39,7 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar' | 'pie'>('line');
   const [activeMetric, setActiveMetric] = useState<'videos' | 'productivity' | 'hours'>('videos');
   const [period, setPeriod] = useState<TimelinePeriod>('this-week');
+  const chartRef = useRef<HTMLDivElement>(null);
 
   // Get date range based on selected period
   const getDateRange = (selectedPeriod: TimelinePeriod) => {
@@ -296,7 +298,7 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent }) => `${name} ${(percent || 0) * 100}%`}
               outerRadius={80}
               fill="#8884d8"
               dataKey="value"
@@ -412,10 +414,17 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
               </button>
             </div>
           </div>
+
+          {/* Export Button */}
+          <ExportButton 
+            entries={entries} 
+            period={getPeriodLabel(period)} 
+            chartRef={chartRef}
+          />
         </div>
       </div>
 
-      <div className="chart-content">
+      <div className="chart-content" ref={chartRef}>
         <ResponsiveContainer width="100%" height={300}>
           {renderChart()}
         </ResponsiveContainer>
