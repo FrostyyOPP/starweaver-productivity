@@ -45,36 +45,43 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
   const getDateRange = (selectedPeriod: TimelinePeriod) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dayOfWeek = today.getDay(); // Calculate day of week once
     
     switch (selectedPeriod) {
       case 'this-week':
+        // Start from Monday of current week
         const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
+        const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday = 0, so offset by 6 to get Monday
+        startOfWeek.setDate(today.getDate() - mondayOffset);
         return { start: startOfWeek, end: today };
       
       case 'last-3-weeks':
+        // Start from 3 weeks ago (Monday to Friday)
         const threeWeeksAgo = new Date(today);
-        threeWeeksAgo.setDate(today.getDate() - 21); // 3 weeks ago
+        const threeWeeksOffset = dayOfWeek === 0 ? 20 : dayOfWeek + 20; // 3 weeks = 21 days
+        threeWeeksAgo.setDate(today.getDate() - threeWeeksOffset);
         return { start: threeWeeksAgo, end: today };
       
       case 'last-month':
+        // Start from 4 weeks ago (Monday to Friday)
         const lastMonth = new Date(today);
-        lastMonth.setDate(today.getDate() - 30); // 30 days ago
+        const lastMonthOffset = dayOfWeek === 0 ? 27 : dayOfWeek + 27; // 4 weeks = 28 days
+        lastMonth.setDate(today.getDate() - lastMonthOffset);
         return { start: lastMonth, end: today };
       
       case 'last-3-months':
         const threeMonthsAgo = new Date(today);
-        threeMonthsAgo.setMonth(today.getMonth() - 3); // 3 months ago
+        threeMonthsAgo.setMonth(today.getMonth() - 3);
         return { start: threeMonthsAgo, end: today };
       
       case 'last-quarter':
         const lastQuarter = new Date(today);
-        lastQuarter.setMonth(today.getMonth() - 3); // 3 months ago (quarter)
+        lastQuarter.setMonth(today.getMonth() - 3);
         return { start: lastQuarter, end: today };
       
       case 'last-12-months':
         const lastYear = new Date(today);
-        lastYear.setFullYear(today.getFullYear() - 1); // 1 year ago
+        lastYear.setFullYear(today.getFullYear() - 1);
         return { start: lastYear, end: today };
       
       default:
@@ -85,28 +92,75 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
   // Get period label for display
   const getPeriodLabel = (selectedPeriod: TimelinePeriod): string => {
     switch (selectedPeriod) {
-      case 'this-week': return 'This Week';
+      case 'this-week': return 'This Week (Mon-Fri)';
       case 'last-3-weeks': return 'Last 3 Weeks';
       case 'last-month': return 'Last Month';
       case 'last-3-months': return 'Last 3 Months';
       case 'last-quarter': return 'Last Quarter';
       case 'last-12-months': return 'Last 12 Months';
-      default: return 'This Week';
+      default: return 'This Week (Mon-Fri)';
     }
   };
 
   // Get period duration for summary
   const getPeriodDuration = (selectedPeriod: TimelinePeriod): string => {
     switch (selectedPeriod) {
-      case 'this-week': return '7 Days';
-      case 'last-3-weeks': return '21 Days';
-      case 'last-month': return '30 Days';
+      case 'this-week': return '5 Days (Mon-Fri)';
+      case 'last-3-weeks': return '15 Days (3 Weeks)';
+      case 'last-month': return '20 Days (4 Weeks)';
       case 'last-3-months': return '90 Days';
       case 'last-quarter': return '90 Days';
       case 'last-12-months': return '365 Days';
-      default: return '7 Days';
+      default: return '5 Days (Mon-Fri)';
     }
   };
+
+  // Format date labels based on selected period
+  const formatDateLabel = (date: Date, selectedPeriod: TimelinePeriod): string => {
+    switch (selectedPeriod) {
+      case 'this-week':
+        // Show day names (Mon, Tue, Wed, Thu, Fri)
+        return date.toLocaleDateString('en-US', { weekday: 'short' });
+      
+      case 'last-3-weeks':
+        // Show Week 1, Week 2, Week 3
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay() + 1); // Start of week (Monday)
+        const weekDiff = Math.floor((today.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000));
+        if (weekDiff <= 0) return 'Week 1';
+        if (weekDiff <= 7) return 'Week 2';
+        return 'Week 3';
+      
+      case 'last-month':
+        // Show Week 1, Week 2, Week 3, Week 4, Week 5
+        const monthWeekStart = new Date(date);
+        monthWeekStart.setDate(date.getDate() - date.getDay() + 1);
+        const monthWeekDiff = Math.floor((today.getTime() - monthWeekStart.getTime()) / (7 * 24 * 60 * 60 * 1000));
+        if (monthWeekDiff <= 0) return 'Week 1';
+        if (monthWeekDiff <= 7) return 'Week 2';
+        if (monthWeekDiff <= 14) return 'Week 3';
+        if (monthWeekDiff <= 21) return 'Week 4';
+        return 'Week 5';
+      
+      case 'last-quarter':
+        // Show Month A, Month B, Month C
+        const quarterMonth = date.getMonth();
+        const quarterDiff = today.getMonth() - quarterMonth;
+        if (quarterDiff <= 0) return 'Month A';
+        if (quarterDiff <= 1) return 'Month B';
+        return 'Month C';
+      
+      case 'last-12-months':
+        // Show Jan, Feb, Mar, etc.
+        return date.toLocaleDateString('en-US', { month: 'short' });
+      
+      default:
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+  };
+
+  // Get today's date for calculations
+  const today = new Date();
 
   // Process data for charts based on selected period
   const processChartData = (): ChartData[] => {
@@ -122,10 +176,7 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
     });
     
     return filteredEntries.map(entry => ({
-      date: new Date(entry.date).toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      }),
+      date: formatDateLabel(new Date(entry.date), period),
       videosCompleted: entry.videosCompleted || 0,
       productivityScore: entry.productivityScore || 0,
       totalHours: entry.totalHours || 0,

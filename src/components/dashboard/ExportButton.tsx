@@ -9,7 +9,7 @@ import html2canvas from 'html2canvas';
 interface ExportButtonProps {
   entries: any[];
   period: string;
-  chartRef?: React.RefObject<HTMLDivElement | null>;
+  chartRef?: React.RefObject<HTMLDivElement>;
 }
 
 interface ExportFormat {
