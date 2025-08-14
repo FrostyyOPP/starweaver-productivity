@@ -1,0 +1,123 @@
+{
+  "teamLeaders": [
+    {
+      "firstName": "Sachin",
+      "lastName": "Kumar",
+      "email": "sachinkumar@gmail.com",
+      "teamName": "Team Alpha"
+    },
+    {
+      "firstName": "Priya",
+      "lastName": "Sharma",
+      "email": "priyasharma@gmail.com",
+      "teamName": "Team Beta"
+    },
+    {
+      "firstName": "Rahul",
+      "lastName": "Verma",
+      "email": "rahulverma@gmail.com",
+      "teamName": "Team Gamma"
+    }
+  ],
+  "editors": [
+    {
+      "firstName": "Aman",
+      "lastName": "Singh",
+      "email": "aman@gmail.com",
+      "teamLeader": "Sachin Kumar",
+      "teamName": "Team Alpha"
+    },
+    {
+      "firstName": "Neha",
+      "lastName": "Patel",
+      "email": "neha@gmail.com",
+      "teamLeader": "Sachin Kumar",
+      "teamName": "Team Alpha"
+    },
+    {
+      "firstName": "Vikram",
+      "lastName": "Gupta",
+      "email": "vikram@gmail.com",
+      "teamLeader": "Priya Sharma",
+      "teamName": "Team Beta"
+    },
+    {
+      "firstName": "Anjali",
+      "lastName": "Joshi",
+      "email": "anjali@gmail.com",
+      "teamLeader": "Priya Sharma",
+      "teamName": "Team Beta"
+    },
+    {
+      "firstName": "Rohit",
+      "lastName": "Malhotra",
+      "email": "rohit@gmail.com",
+      "teamLeader": "Rahul Verma",
+      "teamName": "Team Gamma"
+    },
+    {
+      "firstName": "Kavya",
+      "lastName": "Reddy",
+      "email": "kavya@gmail.com",
+      "teamLeader": "Rahul Verma",
+      "teamName": "Team Gamma"
+    }
+  ],
+  "productivityData": [
+    {
+      "date": "2024-01-15",
+      "editorName": "Aman Singh",
+      "videosCompleted": 8,
+      "category": "Course",
+      "notes": "Completed 8 course videos today",
+      "mood": 4,
+      "energyLevel": 4,
+      "challenges": "Some technical difficulties with editing software",
+      "achievements": "Improved editing speed by 15%"
+    },
+    {
+      "date": "2024-01-15",
+      "editorName": "Neha Patel",
+      "videosCompleted": 12,
+      "category": "Marketing",
+      "notes": "High productivity day with marketing content",
+      "mood": 5,
+      "energyLevel": 5,
+      "challenges": "None",
+      "achievements": "Exceeded daily target by 20%"
+    },
+    {
+      "date": "2024-01-15",
+      "editorName": "Vikram Gupta",
+      "videosCompleted": 6,
+      "category": "Course",
+      "notes": "Working on complex course material",
+      "mood": 3,
+      "energyLevel": 3,
+      "challenges": "Complex content requiring more time",
+      "achievements": "Maintained quality despite challenges"
+    },
+    {
+      "date": "2024-01-16",
+      "editorName": "Aman Singh",
+      "videosCompleted": 10,
+      "category": "Course",
+      "notes": "Better day, met daily target",
+      "mood": 4,
+      "energyLevel": 4,
+      "challenges": "None",
+      "achievements": "Met daily target exactly"
+    },
+    {
+      "date": "2024-01-16",
+      "editorName": "Anjali Joshi",
+      "videosCompleted": 0,
+      "category": "Leave",
+      "notes": "On leave today",
+      "mood": 0,
+      "energyLevel": 0,
+      "challenges": "N/A",
+      "achievements": "N/A"
+    }
+  ]
+}

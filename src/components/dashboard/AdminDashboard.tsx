@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Star, TrendingUp, Clock, Target, Award, Calendar, BarChart3, Users, Plus, LogOut, Shield, UserPlus, UserMinus, X } from 'lucide-react';
+import { Star, TrendingUp, Clock, Target, Award, Calendar, BarChart3, Users, Plus, LogOut, Shield, UserPlus, UserMinus, X, Upload } from 'lucide-react';
 import AdminProductivityCharts from './AdminProductivityCharts';
+import DataImportModal from './DataImportModal';
 
 interface TeamMember {
   _id: string;
@@ -153,6 +154,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'entries'>('overview');
   const [migrating, setMigrating] = useState(false);
   const [teamFilter, setTeamFilter] = useState<string>('all'); // 'all', 'editor', 'viewer', 'manager'
+  const [showImportModal, setShowImportModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -314,6 +316,36 @@ export default function AdminDashboard() {
       setMessage({ type: 'error', text: 'An error occurred during data migration' });
     } finally {
       setMigrating(false);
+    }
+  };
+
+  const handleDataImport = async (importData: any) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/import', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(importData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setMessage({ 
+          type: 'success', 
+          text: `Import completed successfully! ${result.results.teamLeadersCreated} team leaders, ${result.results.editorsCreated} editors, and ${result.results.entriesCreated} entries created.` 
+        });
+        fetchAdminData(); // Refresh data
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: `Import failed: ${error.error}` });
+        throw new Error(error.error);
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: `Import failed: ${error}` });
+      throw error;
     }
   };
 
@@ -572,6 +604,15 @@ export default function AdminDashboard() {
                       <BarChart3 className="w-8 h-8 text-orange-600 mb-2" />
                       <h4 className="text-semibold text-gray-900">Restore Data</h4>
                       <p className="text-sm text-gray-600">Migrate legacy entries to restore data</p>
+                    </button>
+
+                    <button
+                      onClick={() => setShowImportModal(true)}
+                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <Upload className="w-8 h-8 text-blue-600 mb-2" />
+                      <h4 className="font-semibold text-gray-900">Import Data</h4>
+                      <p className="text-sm text-gray-600">Import team structure and productivity data</p>
                     </button>
                   </div>
                 </div>
@@ -976,6 +1017,13 @@ export default function AdminDashboard() {
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddTeamMember}
           loading={addMemberLoading}
+        />
+
+        {/* Data Import Modal */}
+        <DataImportModal
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          onImport={handleDataImport}
         />
       </div>
     </div>
