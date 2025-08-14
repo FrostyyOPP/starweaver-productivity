@@ -533,15 +533,6 @@ export default function AdminDashboard() {
                 <div className="card-content">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <button
-                      onClick={() => setShowAddModal(true)}
-                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
-                    >
-                      <UserPlus className="w-8 h-8 text-blue-600 mb-2" />
-                      <h4 className="font-semibold text-gray-900">Add Team Member</h4>
-                      <p className="text-sm text-gray-600">Invite new users to the system</p>
-                    </button>
-                    
-                    <button
                       onClick={() => setActiveTab('team')}
                       className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
                     >
@@ -565,7 +556,7 @@ export default function AdminDashboard() {
                       className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <BarChart3 className="w-8 h-8 text-orange-600 mb-2" />
-                      <h4 className="font-semibold text-gray-900">Restore Data</h4>
+                      <h4 className="text-semibold text-gray-900">Restore Data</h4>
                       <p className="text-sm text-gray-600">Migrate legacy entries to restore data</p>
                     </button>
                   </div>
@@ -618,6 +609,13 @@ export default function AdminDashboard() {
                       <p className="text-gray-600">Detailed performance breakdown by team member</p>
                     </div>
                     <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => setShowAddModal(true)}
+                        className="btn btn-primary flex items-center space-x-2 px-4 py-2"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        <span>Add Member</span>
+                      </button>
                       <select
                         value={teamFilter}
                         onChange={(e) => setTeamFilter(e.target.value)}
@@ -778,6 +776,13 @@ export default function AdminDashboard() {
                       <p className="text-gray-600">Monitor productivity across all users</p>
                     </div>
                     <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => setShowAddModal(true)}
+                        className="btn btn-primary flex items-center space-x-2 px-4 py-2"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        <span>Add Member</span>
+                      </button>
                       <select
                         value={teamFilter}
                         onChange={(e) => setTeamFilter(e.target.value)}
