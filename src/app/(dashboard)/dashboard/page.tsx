@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import EditorDashboard from '@/components/dashboard/EditorDashboard';
 import ManagerDashboard from '@/components/dashboard/ManagerDashboard';
+import TeamManagerDashboard from '@/components/dashboard/TeamManagerDashboard';
 import AdminDashboard from '@/components/dashboard/AdminDashboard';
 import { Star } from 'lucide-react';
 
@@ -78,6 +79,8 @@ export default function DashboardPage() {
     switch (user.role) {
       case 'admin':
         return <AdminDashboard />;
+      case 'team_manager':
+        return <TeamManagerDashboard />;
       case 'manager':
         return <ManagerDashboard />;
       case 'editor':

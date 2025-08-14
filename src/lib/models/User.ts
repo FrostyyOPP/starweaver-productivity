@@ -5,8 +5,17 @@ export interface IUser extends mongoose.Document {
   name: string;
   email: string;
   password: string;
-  role: 'admin' | 'manager' | 'editor' | 'viewer';
+  role: 'admin' | 'team_manager' | 'editor' | 'viewer';
   isActive: boolean;
+  teamId?: mongoose.Types.ObjectId; // Reference to team
+  teamManagerId?: mongoose.Types.ObjectId; // Reference to team manager
+  position?: string; // Job title/position
+  department?: string; // Department within the organization
+  employeeId?: string; // Employee ID
+  phone?: string; // Contact phone
+  avatar?: string; // Profile picture URL
+  skills?: string[]; // Array of skills
+  joinDate?: Date; // When they joined the team
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -48,8 +57,51 @@ const userSchema = new mongoose.Schema<IUser>({
   },
   role: {
     type: String,
-    enum: ['admin', 'manager', 'editor', 'viewer'],
+    enum: ['admin', 'team_manager', 'editor', 'viewer'],
     default: 'editor'
+  },
+  teamId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+    required: function() { return this.role === 'editor' || this.role === 'team_manager'; }
+  },
+  teamManagerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: function() { return this.role === 'editor'; }
+  },
+  position: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Position cannot be more than 100 characters']
+  },
+  department: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Department cannot be more than 100 characters']
+  },
+  employeeId: {
+    type: String,
+    trim: true,
+    unique: true,
+    sparse: true
+  },
+  phone: {
+    type: String,
+    trim: true,
+    match: [/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number']
+  },
+  avatar: {
+    type: String,
+    trim: true
+  },
+  skills: [{
+    type: String,
+    trim: true
+  }],
+  joinDate: {
+    type: Date,
+    default: Date.now
   },
   isActive: {
     type: Boolean,
@@ -88,5 +140,9 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
+userSchema.index({ teamId: 1 });
+userSchema.index({ teamManagerId: 1 });
+userSchema.index({ employeeId: 1 });
+userSchema.index({ department: 1 });
 
 export default mongoose.models.User || mongoose.model<IUser>('User', userSchema);

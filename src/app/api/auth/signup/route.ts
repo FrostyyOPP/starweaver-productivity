@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!['admin', 'manager', 'editor', 'viewer'].includes(role)) {
+    if (!['admin', 'team_manager', 'manager', 'editor', 'viewer'].includes(role)) {
       return NextResponse.json(
-        { error: 'Invalid role. Must be admin, manager, editor, or viewer' },
+        { error: 'Invalid role. Must be admin, team_manager, manager, editor, or viewer' },
         { status: 400 }
       );
     }

@@ -7,7 +7,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'manager' | 'editor' | 'viewer';
+  role: 'admin' | 'team_manager' | 'manager' | 'editor' | 'viewer';
   lastLogin?: string;
 }
 
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name, 
         email, 
         password, 
-        role: role as 'admin' | 'editor' | 'viewer' 
+        role: role as 'admin' | 'team_manager' | 'manager' | 'editor' | 'viewer' 
       });
       
       authStorage.setToken(response.accessToken);

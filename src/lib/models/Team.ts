@@ -3,18 +3,32 @@ import mongoose from 'mongoose';
 export interface ITeam extends mongoose.Document {
   name: string;
   description: string;
+  code: string; // Team code (e.g., TEAM-A, TEAM-B, TEAM-C)
+  color: string; // Team color for UI
   members: mongoose.Types.ObjectId[];
+  teamManager: mongoose.Types.ObjectId; // Single team manager
   admins: mongoose.Types.ObjectId[];
   admin: mongoose.Types.ObjectId; // Single admin field for backward compatibility
   goals: {
     dailyTarget: number;
     weeklyTarget: number;
     monthlyTarget: number;
+    quarterlyTarget: number;
+    yearlyTarget: number;
   };
   settings: {
     allowMemberInvites: boolean;
     requireApproval: boolean;
     visibility: 'public' | 'private';
+    allowManagerEdit: boolean; // Can team manager edit member entries
+    allowManagerCreate: boolean; // Can team manager create entries for members
+  };
+  metrics: {
+    totalMembers: number;
+    activeMembers: number;
+    averageProductivity: number;
+    totalVideosCompleted: number;
+    lastUpdated: Date;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -33,11 +47,29 @@ const teamSchema = new mongoose.Schema<ITeam>({
     maxlength: [500, 'Description cannot exceed 500 characters'],
     default: ''
   },
+  code: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    maxlength: [10, 'Team code cannot exceed 10 characters']
+  },
+  color: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: [10, 'Team color cannot exceed 10 characters']
+  },
   members: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   }],
+  teamManager: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   admins: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -63,6 +95,16 @@ const teamSchema = new mongoose.Schema<ITeam>({
       type: Number,
       default: 360,
       min: [1, 'Monthly target must be at least 1']
+    },
+    quarterlyTarget: {
+      type: Number,
+      default: 1080,
+      min: [1, 'Quarterly target must be at least 1']
+    },
+    yearlyTarget: {
+      type: Number,
+      default: 4320,
+      min: [1, 'Yearly target must be at least 1']
     }
   },
   settings: {
@@ -78,6 +120,36 @@ const teamSchema = new mongoose.Schema<ITeam>({
       type: String,
       enum: ['public', 'private'],
       default: 'private'
+    },
+    allowManagerEdit: {
+      type: Boolean,
+      default: false
+    },
+    allowManagerCreate: {
+      type: Boolean,
+      default: false
+    }
+  },
+  metrics: {
+    totalMembers: {
+      type: Number,
+      default: 0
+    },
+    activeMembers: {
+      type: Number,
+      default: 0
+    },
+    averageProductivity: {
+      type: Number,
+      default: 0
+    },
+    totalVideosCompleted: {
+      type: Number,
+      default: 0
+    },
+    lastUpdated: {
+      type: Date,
+      default: Date.now
     }
   }
 }, {
@@ -101,6 +173,8 @@ teamSchema.pre('save', function(next) {
 
 // Create indexes
 teamSchema.index({ name: 1 });
+teamSchema.index({ code: 1 });
+teamSchema.index({ color: 1 });
 teamSchema.index({ members: 1 });
 teamSchema.index({ admins: 1 });
 teamSchema.index({ visibility: 1 });
