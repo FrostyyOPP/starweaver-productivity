@@ -41,18 +41,19 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Migration error:', error);
     
-    if (error.message === 'Invalid or expired token') {
+    if (error instanceof Error && error.message === 'Invalid or expired token') {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 }
       );
     }
 
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: 'Migration failed', details: error.message },
+      { error: 'Migration failed', details: errorMessage },
       { status: 500 }
     );
   }
@@ -110,18 +111,19 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Migration status check error:', error);
     
-    if (error.message === 'Invalid or expired token') {
+    if (error instanceof Error && error.message === 'Invalid or expired token') {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 }
       );
     }
 
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: 'Status check failed', details: error.message },
+      { error: 'Status check failed', details: errorMessage },
       { status: 500 }
     );
   }

@@ -147,8 +147,8 @@ entrySchema.statics.migrateLegacyEntries = async function() {
 
     for (const entry of legacyEntries) {
       // Set default values for missing fields
-      if (!entry.notes && entry.remarks) {
-        entry.notes = entry.remarks;
+      if (!entry.notes && (entry as any).remarks) {
+        entry.notes = (entry as any).remarks;
       }
       
       if (!entry.notes) {
@@ -211,7 +211,7 @@ entrySchema.statics.getUserDailyStats = async function(userId: string, date: Dat
 // Static method to get user's weekly stats
 entrySchema.statics.getUserWeeklyStats = async function(userId: string, startDate: Date) {
   const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + 6);
+  endDate.setDate(startDate.getDate() + 6);
 
   return this.find({
     userId,
