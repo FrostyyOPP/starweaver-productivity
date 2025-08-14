@@ -1570,6 +1570,7 @@ button:disabled {
   }
 }
 
+/* Dashboard content text colors */
 .dashboard-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -1579,6 +1580,44 @@ button:disabled {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #111827;
+}
+
+.dashboard-content h1,
+.dashboard-content h2,
+.dashboard-content h3,
+.dashboard-content h4,
+.dashboard-content h5,
+.dashboard-content h6 {
+  color: #111827;
+}
+
+.dashboard-content p {
+  color: #374151;
+}
+
+.dashboard-content .text-muted {
+  color: #6b7280;
+}
+
+.dashboard-content .text-primary {
+  color: #1e40af;
+}
+
+.dashboard-content .text-success {
+  color: #059669;
+}
+
+.dashboard-content .text-warning {
+  color: #d97706;
+}
+
+.dashboard-content .text-danger {
+  color: #dc2626;
+}
+
+.dashboard-content .text-info {
+  color: #0891b2;
 }
 
 @media (min-width: 768px) {
@@ -1760,6 +1799,22 @@ button:disabled {
   color: #dc2626;
 }
 
+/* Stats card specific text colors */
+.stat-card .stat-label {
+  color: #374151;
+  font-weight: 500;
+}
+
+.stat-card .stat-number {
+  color: #111827;
+  font-weight: 700;
+}
+
+.stat-card .stat-unit {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
 /* Loading states */
 .loading-spinner {
   border: 2px solid #f3f4f6;
@@ -1897,7 +1952,7 @@ button:disabled {
 
 .recent-entries-section p {
   margin-bottom: 1.5rem;
-  color: #6b7280;
+  color: #374151;
 }
 
 /* Entry list spacing */
@@ -1921,6 +1976,58 @@ button:disabled {
 
 .entry-item:last-child {
   margin-bottom: 0;
+}
+
+/* Entry item text colors */
+.entry-item .entry-date {
+  color: #111827;
+  font-weight: 600;
+}
+
+.entry-item .entry-time {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.entry-item .entry-label {
+  color: #374151;
+  font-weight: 500;
+}
+
+.entry-item .entry-value {
+  color: #111827;
+  font-weight: 600;
+}
+
+.entry-item .entry-percentage {
+  color: #059669;
+  font-weight: 700;
+}
+
+.entry-item .entry-hours {
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.entry-item .entry-mood {
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+.entry-item .entry-energy {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.entry-item .entry-videos {
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.entry-item .entry-videos-label {
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 /* Empty state spacing */
