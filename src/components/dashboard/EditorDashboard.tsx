@@ -263,6 +263,9 @@ export default function EditorDashboard() {
         });
         setShowSuccessNotification(true);
         
+        // Close the entry form automatically
+        setShowEntryForm(false);
+        
         resetForm();
         fetchUserData(); // Refresh data to show new entry
         
