@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Star, TrendingUp, Clock, Target, Award, Calendar, BarChart3, Users, Plus, LogOut, Shield, UserPlus, UserMinus, X } from 'lucide-react';
-import ProductivityCharts from './ProductivityCharts';
+import AdminProductivityCharts from './AdminProductivityCharts';
 
 interface TeamMember {
   _id: string;
@@ -502,7 +502,11 @@ export default function AdminDashboard() {
               {/* Productivity Charts */}
               <div className="dashboard-section mt-8">
                 <h3 className="section-title">System Analytics</h3>
-                <ProductivityCharts entries={entries} />
+                <AdminProductivityCharts 
+                  entries={entries} 
+                  teamMembers={teamMembers}
+                  systemStats={systemStats}
+                />
               </div>
 
               {/* User Distribution by Role */}
@@ -761,6 +765,21 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
+
+              {/* Team Analytics Charts */}
+              <div className="card">
+                <div className="card-header">
+                  <h3 className="card-title">Team Analytics</h3>
+                  <p className="text-gray-600">Detailed team performance charts with filtering</p>
+                </div>
+                <div className="card-content">
+                  <AdminProductivityCharts 
+                    entries={entries} 
+                    teamMembers={teamMembers}
+                    systemStats={systemStats}
+                  />
+                </div>
+              </div>
             </div>
           )}
 
