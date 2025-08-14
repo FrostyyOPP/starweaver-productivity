@@ -66,8 +66,6 @@ export default function EditorDashboard() {
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    shiftStart: '',
-    shiftEnd: '',
     videosCompleted: '',
     videoCategory: 'course' as 'course' | 'marketing' | 'leave',
     remarks: ''
@@ -208,9 +206,9 @@ export default function EditorDashboard() {
         targetVideos = -3; // Leave deducts 3 videos
       }
       
-      // Format shift times by combining date with time
-      const shiftStart = new Date(`${formData.date}T${formData.shiftStart}`);
-      const shiftEnd = new Date(`${formData.date}T${formData.shiftEnd}`);
+      // Use default shift times (full day)
+      const shiftStart = new Date(`${formData.date}T00:00:00Z`);
+      const shiftEnd = new Date(`${formData.date}T23:59:59Z`);
       
       const entryData = {
         date: formData.date,
@@ -261,14 +259,11 @@ export default function EditorDashboard() {
   const resetForm = () => {
     setFormData({
       date: new Date().toISOString().split('T')[0],
-      shiftStart: '',
-      shiftEnd: '',
       videosCompleted: '',
       videoCategory: 'course' as 'course' | 'marketing' | 'leave',
       remarks: ''
     });
     setFormMessage(null);
-    setShowEntryForm(false);
   };
 
   const handleAddDemoEntries = async () => {
@@ -548,35 +543,6 @@ export default function EditorDashboard() {
                         <option value="marketing">Marketing Video</option>
                         <option value="leave">Leave</option>
                       </select>
-                    </div>
-                  </div>
-
-                  {/* Shift Time Row */}
-                  <div className="form-input-group">
-                    <div className="flex-1">
-                      <label htmlFor="shiftStart" className="form-label">Shift Start Time</label>
-                      <input
-                        type="time"
-                        id="shiftStart"
-                        name="shiftStart"
-                        value={formData.shiftStart}
-                        onChange={(e) => setFormData({ ...formData, shiftStart: e.target.value })}
-                        className="form-input"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="flex-1">
-                      <label htmlFor="shiftEnd" className="form-label">Shift End Time</label>
-                      <input
-                        type="time"
-                        id="shiftEnd"
-                        name="shiftEnd"
-                        value={formData.shiftEnd}
-                        onChange={(e) => setFormData({ ...formData, shiftEnd: e.target.value })}
-                        className="form-input"
-                        required
-                      />
                     </div>
                   </div>
 
