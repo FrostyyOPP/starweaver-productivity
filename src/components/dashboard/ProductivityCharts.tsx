@@ -123,13 +123,22 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
         return date.toLocaleDateString('en-US', { weekday: 'short' });
       
       case 'last-3-weeks':
-        // Show Week 1, Week 2, Week 3
+        // Show actual week ranges like "Aug 1-5", "Aug 8-12", "Aug 15-19"
         const weekStart = new Date(date);
         weekStart.setDate(date.getDate() - date.getDay() + 1); // Start of week (Monday)
-        const weekDiff = Math.floor((today.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000));
-        if (weekDiff <= 0) return 'Week 1';
-        if (weekDiff <= 7) return 'Week 2';
-        return 'Week 3';
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 4); // End of week (Friday)
+        
+        const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
+        const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+        const startDay = weekStart.getDate();
+        const endDay = weekEnd.getDate();
+        
+        if (startMonth === endMonth) {
+          return `${startMonth} ${startDay}-${endDay}`;
+        } else {
+          return `${startMonth} ${startDay}-${endMonth} ${endDay}`;
+        }
       
       case 'last-month':
         // Show Week 1, Week 2, Week 3, Week 4, Week 5
@@ -162,9 +171,50 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
   // Get today's date for calculations
   const today = new Date();
 
+  // Create week-based data structure for last 3 weeks
+  const createWeekBasedData = (): ChartData[] => {
+    const weeks = [];
+    const now = new Date();
+    
+    // Create 3 weeks of data
+    for (let i = 2; i >= 0; i--) {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - (i * 7) - now.getDay() + 1); // Start of week (Monday)
+      
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 4); // End of week (Friday)
+      
+      // Find entries for this week
+      const weekEntries = entries.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= weekStart && entryDate <= weekEnd;
+      });
+      
+      // Calculate totals for the week
+      const weekData = {
+        date: formatDateLabel(weekStart, 'last-3-weeks'),
+        videosCompleted: weekEntries.reduce((sum, entry) => sum + (entry.videosCompleted || 0), 0),
+        productivityScore: weekEntries.length > 0 
+          ? Math.round(weekEntries.reduce((sum, entry) => sum + (entry.productivityScore || 0), 0) / weekEntries.length)
+          : 0,
+        totalHours: weekEntries.reduce((sum, entry) => sum + (entry.totalHours || 0), 0),
+        category: 'week'
+      };
+      
+      weeks.push(weekData);
+    }
+    
+    return weeks;
+  };
+
   // Process data for charts based on selected period
   const processChartData = (): ChartData[] => {
     if (!entries || entries.length === 0) return [];
+
+    // Special handling for last 3 weeks to show week-based data
+    if (period === 'last-3-weeks') {
+      return createWeekBasedData();
+    }
 
     const sortedEntries = [...entries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     const { start, end } = getDateRange(period);
