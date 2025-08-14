@@ -3,7 +3,21 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Star, TrendingUp, Clock, Target, Award, Calendar, BarChart3, LogOut, Plus, X } from 'lucide-react';
+import { 
+  Star, 
+  Plus, 
+  LogOut, 
+  BarChart3,
+  Calendar,
+  Clock,
+  Target,
+  TrendingUp,
+  Users,
+  Video,
+  CheckCircle,
+  AlertCircle,
+  X
+} from 'lucide-react';
 
 interface Entry {
   _id: string;
@@ -58,6 +72,10 @@ export default function EditorDashboard() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  // Demo data state
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoMessage, setDemoMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -280,6 +298,123 @@ export default function EditorDashboard() {
     setShowEntryForm(false);
   };
 
+  const handleAddDemoEntries = async () => {
+    if (!user) {
+      setDemoMessage({ type: 'error', text: 'User not logged in. Please log in to add demo data.' });
+      return;
+    }
+
+    setDemoLoading(true);
+    setDemoMessage(null);
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setDemoMessage({ type: 'error', text: 'Authentication required. Please login again.' });
+        return;
+      }
+
+      const demoEntries = [
+        {
+          date: '2023-10-26',
+          shiftStart: '2023-10-26T09:00:00Z',
+          shiftEnd: '2023-10-26T17:00:00Z',
+          videosCompleted: 3,
+          targetVideos: 3,
+          productivityScore: 100,
+          mood: 'excellent',
+          energyLevel: 'high',
+          challenges: [],
+          achievements: ['Completed 3 course videos'],
+          totalHours: 8,
+          notes: 'Regular day of work',
+          videoCategory: 'course'
+        },
+        {
+          date: '2023-10-27',
+          shiftStart: '2023-10-27T09:00:00Z',
+          shiftEnd: '2023-10-27T17:00:00Z',
+          videosCompleted: 0,
+          targetVideos: 3,
+          productivityScore: 0,
+          mood: 'poor',
+          energyLevel: 'low',
+          challenges: ['Low energy'],
+          achievements: [],
+          totalHours: 8,
+          notes: 'Sick day',
+          videoCategory: 'leave'
+        },
+        {
+          date: '2023-10-28',
+          shiftStart: '2023-10-28T09:00:00Z',
+          shiftEnd: '2023-10-28T17:00:00Z',
+          videosCompleted: 1,
+          targetVideos: 3,
+          productivityScore: 33,
+          mood: 'good',
+          energyLevel: 'medium',
+          challenges: [],
+          achievements: ['Completed 1 marketing video'],
+          totalHours: 8,
+          notes: 'Marketing day',
+          videoCategory: 'marketing'
+        },
+        {
+          date: '2023-10-29',
+          shiftStart: '2023-10-29T09:00:00Z',
+          shiftEnd: '2023-10-29T17:00:00Z',
+          videosCompleted: 3,
+          targetVideos: 3,
+          productivityScore: 100,
+          mood: 'excellent',
+          energyLevel: 'high',
+          challenges: [],
+          achievements: ['Completed 3 course videos'],
+          totalHours: 8,
+          notes: 'Regular day of work',
+          videoCategory: 'course'
+        },
+        {
+          date: '2023-10-30',
+          shiftStart: '2023-10-30T09:00:00Z',
+          shiftEnd: '2023-10-30T17:00:00Z',
+          videosCompleted: 0,
+          targetVideos: 3,
+          productivityScore: 0,
+          mood: 'poor',
+          energyLevel: 'low',
+          challenges: ['Low energy'],
+          achievements: [],
+          totalHours: 8,
+          notes: 'Sick day',
+          videoCategory: 'leave'
+        }
+      ];
+
+      const response = await fetch('/api/entries/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ entries: demoEntries })
+      });
+
+      if (response.ok) {
+        setDemoMessage({ type: 'success', text: 'Demo entries added successfully!' });
+        fetchUserData(); // Refresh data to show new entries
+      } else {
+        const errorData = await response.json();
+        setDemoMessage({ type: 'error', text: errorData.error || 'Failed to add demo entries' });
+      }
+    } catch (error) {
+      setDemoMessage({ type: 'error', text: 'An error occurred while adding demo entries' });
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="dashboard-container">
@@ -358,9 +493,9 @@ export default function EditorDashboard() {
             {!showEntryForm ? (
               <button
                 onClick={() => setShowEntryForm(true)}
-                className="flex items-center space-x-3 px-6 py-3 bg-blue-600 text-white rounded-lg hover-bg-blue-700 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
+                className="flex items-center space-x-3 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
                 <span>Add Today's Entry</span>
               </button>
             ) : (
@@ -514,6 +649,35 @@ export default function EditorDashboard() {
                     </button>
                   </div>
                 </form>
+              </div>
+            )}
+            
+            {/* Demo Data Button */}
+            <button
+              onClick={handleAddDemoEntries}
+              disabled={demoLoading}
+              className="ml-4 px-4 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 font-semibold shadow-sm hover:shadow-md"
+            >
+              {demoLoading ? (
+                <>
+                  <div className="loading-spinner w-4 h-4" />
+                  <span>Adding Demo Data...</span>
+                </>
+              ) : (
+                <>
+                  <BarChart3 className="w-4 h-4" />
+                  <span>Add Demo Entries</span>
+                </>
+              )}
+            </button>
+            
+            {demoMessage && (
+              <div className={`mt-3 px-4 py-2 rounded-lg text-sm ${
+                demoMessage.type === 'success' 
+                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                  : 'bg-red-100 text-red-800 border border-red-200'
+              }`}>
+                {demoMessage.text}
               </div>
             )}
           </div>

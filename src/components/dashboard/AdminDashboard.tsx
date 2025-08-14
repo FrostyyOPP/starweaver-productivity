@@ -134,6 +134,8 @@ export default function AdminDashboard() {
   const [addMemberLoading, setAddMemberLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'entries'>('overview');
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoMessage, setDemoMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -247,6 +249,40 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'An error occurred while removing team member' });
+    }
+  };
+
+  const handleAddDemoEntries = async () => {
+    if (!confirm('Are you sure you want to add demo entries? This will overwrite existing entries.')) return;
+
+    try {
+      setDemoLoading(true);
+      setDemoMessage(null);
+
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setDemoMessage({ type: 'error', text: 'No access token found' });
+        return;
+      }
+
+      const response = await fetch('/api/demo/entries', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setDemoMessage({ type: 'success', text: 'Demo entries added successfully!' });
+        fetchAdminData(); // Refresh data
+      } else {
+        const errorData = await response.json();
+        setDemoMessage({ type: 'error', text: errorData.error || 'Failed to add demo entries' });
+      }
+    } catch (error) {
+      setDemoMessage({ type: 'error', text: 'An error occurred while adding demo entries' });
+    } finally {
+      setDemoLoading(false);
     }
   };
 
@@ -476,6 +512,43 @@ export default function AdminDashboard() {
                       <h4 className="font-semibold text-gray-900">View Entries</h4>
                       <p className="text-sm text-gray-600">Monitor all user entries</p>
                     </button>
+                  </div>
+                  
+                  {/* Demo Data Section */}
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <h4 className="font-semibold text-gray-900 mb-3">Demo Data</h4>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={handleAddDemoEntries}
+                        disabled={demoLoading}
+                        className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      >
+                        {demoLoading ? (
+                          <>
+                            <div className="loading-spinner w-4 h-4" />
+                            <span>Adding Demo Data...</span>
+                          </>
+                        ) : (
+                          <>
+                            <BarChart3 className="w-4 h-4" />
+                            <span>Add Demo Entries</span>
+                          </>
+                        )}
+                      </button>
+                      
+                      {demoMessage && (
+                        <div className={`px-4 py-2 rounded-lg text-sm ${
+                          demoMessage.type === 'success' 
+                            ? 'bg-green-100 text-green-800 border border-green-200' 
+                            : 'bg-red-100 text-red-800 border border-red-200'
+                        }`}>
+                          {demoMessage.text}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Add sample productivity data for testing and demonstration purposes.
+                    </p>
                   </div>
                 </div>
               </div>
