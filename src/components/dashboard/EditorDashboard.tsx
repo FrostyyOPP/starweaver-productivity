@@ -66,6 +66,8 @@ export default function EditorDashboard() {
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
+    shiftStart: '',
+    shiftEnd: '',
     videosCompleted: '',
     videoCategory: 'course' as 'course' | 'marketing' | 'leave',
     remarks: ''
@@ -194,66 +196,43 @@ export default function EditorDashboard() {
   const handleSubmitEntry = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.videosCompleted || parseInt(formData.videosCompleted) <= 0) {
-      setFormMessage({ type: 'error', text: 'Please enter a valid number of videos completed' });
-      return;
-    }
-
-    // Validate video category specific rules
-    if (formData.videoCategory === 'marketing') {
-      const videos = parseFloat(formData.videosCompleted);
-      if (videos > 0.5) {
-        setFormMessage({ type: 'error', text: 'Marketing videos cannot exceed 0.5 per day. You need 2 consecutive days to complete 1 marketing video.' });
-        return;
-      }
-    }
-
-    if (formData.videoCategory === 'leave') {
-      if (parseInt(formData.videosCompleted) !== 0) {
-        setFormMessage({ type: 'error', text: 'When marking leave, videos completed should be 0' });
-        return;
-      }
-    }
-
+    if (!user) return;
+    
     try {
       setSubmitting(true);
       setFormMessage(null);
+      
+      // Calculate target videos based on category
+      let targetVideos = 3; // Default daily target
+      if (formData.videoCategory === 'leave') {
+        targetVideos = -3; // Leave deducts 3 videos
+      }
+      
+      // Format shift times by combining date with time
+      const shiftStart = new Date(`${formData.date}T${formData.shiftStart}`);
+      const shiftEnd = new Date(`${formData.date}T${formData.shiftEnd}`);
+      
+      const entryData = {
+        date: formData.date,
+        shiftStart: shiftStart.toISOString(),
+        shiftEnd: shiftEnd.toISOString(),
+        videosCompleted: parseFloat(formData.videosCompleted),
+        videoCategory: formData.videoCategory,
+        targetVideos: targetVideos,
+        productivityScore: formData.videoCategory === 'leave' ? 0 : Math.min(100, (parseFloat(formData.videosCompleted) / 3) * 100),
+        mood: 'good',
+        energyLevel: 4,
+        challenges: [],
+        achievements: [],
+        totalHours: formData.videoCategory === 'leave' ? 0 : 8,
+        remarks: formData.remarks
+      };
 
       const token = localStorage.getItem('accessToken');
       if (!token) {
         setFormMessage({ type: 'error', text: 'Authentication required. Please login again.' });
         return;
       }
-
-      // Calculate effective videos based on category
-      let effectiveVideos = 0;
-      let targetVideos = 3; // Daily target is 3 videos
-      
-      switch (formData.videoCategory) {
-        case 'course':
-          effectiveVideos = parseInt(formData.videosCompleted);
-          break;
-        case 'marketing':
-          effectiveVideos = parseFloat(formData.videosCompleted) * 6; // 1 marketing video = 6 videos
-          break;
-        case 'leave':
-          effectiveVideos = -3; // Leave deducts 3 videos from target
-          break;
-      }
-
-      const entryData = {
-        date: formData.date,
-        videosCompleted: parseInt(formData.videosCompleted),
-        targetVideos: targetVideos,
-        productivityScore: formData.videoCategory === 'leave' ? 0 : Math.min(100, (effectiveVideos / targetVideos) * 100),
-        mood: formData.videoCategory === 'leave' ? 'neutral' : 'good',
-        energyLevel: formData.videoCategory === 'leave' ? 1 : 3,
-        challenges: formData.videoCategory === 'leave' ? ['On leave'] : [],
-        achievements: formData.videoCategory === 'leave' ? ['Marked leave for the day'] : [`Completed ${formData.videosCompleted} ${formData.videoCategory} videos`],
-        totalHours: formData.videoCategory === 'leave' ? 0 : 8,
-        notes: formData.remarks || '',
-        videoCategory: formData.videoCategory
-      };
 
       const response = await fetch('/api/entries', {
         method: 'POST',
@@ -266,16 +245,8 @@ export default function EditorDashboard() {
 
       if (response.ok) {
         setFormMessage({ type: 'success', text: 'Entry added successfully!' });
-        setFormData({
-          date: new Date().toISOString().split('T')[0],
-          videosCompleted: '',
-          videoCategory: 'course' as 'course' | 'marketing' | 'leave',
-          remarks: ''
-        });
-        setShowEntryForm(false);
-        
-        // Refresh data to show new entry
-        fetchUserData();
+        resetForm();
+        fetchUserData(); // Refresh data to show new entry
       } else {
         const errorData = await response.json();
         setFormMessage({ type: 'error', text: errorData.error || 'Failed to add entry' });
@@ -290,6 +261,8 @@ export default function EditorDashboard() {
   const resetForm = () => {
     setFormData({
       date: new Date().toISOString().split('T')[0],
+      shiftStart: '',
+      shiftEnd: '',
       videosCompleted: '',
       videoCategory: 'course' as 'course' | 'marketing' | 'leave',
       remarks: ''
@@ -501,15 +474,26 @@ export default function EditorDashboard() {
             ) : (
               <div className="form-section entry-form-container">
                 <div className="form-section-header">
-                  <h3 className="form-section-title">Add Video Entry</h3>
+                  <h3 className="form-section-title">Add Today's Entry</h3>
                   <button
-                    onClick={resetForm}
+                    onClick={() => setShowEntryForm(false)}
                     className="form-close-button"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
-                
+
+                {/* Form Message Display */}
+                {formMessage && (
+                  <div className={`mb-4 p-3 rounded-lg ${
+                    formMessage.type === 'success' 
+                      ? 'bg-green-50 border border-green-200 text-green-700' 
+                      : 'bg-red-50 border border-red-200 text-red-700'
+                  }`}>
+                    {formMessage.text}
+                  </div>
+                )}
+
                 {/* Target Summary */}
                 <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h4 className="font-semibold text-blue-900 mb-3 text-base">Daily & Weekly Targets</h4>
@@ -533,26 +517,16 @@ export default function EditorDashboard() {
                     <p className="mb-0">• Leave: Deducts 3 videos from daily target</p>
                   </div>
                 </div>
-                
-                {formMessage && (
-                  <div className={`mb-4 p-3 rounded-lg ${
-                    formMessage.type === 'success' 
-                      ? 'bg-green-50 border border-green-200 text-green-700' 
-                      : 'bg-red-50 border border-red-200 text-red-700'
-                  }`}>
-                    {formMessage.text}
-                  </div>
-                )}
 
                 <form onSubmit={handleSubmitEntry} className="space-y-6">
-                  <div className="grid grid-cols-1 md-grid-cols-2 lg-grid-cols-4 gap-6">
-                    <div className="form-input-group">
-                      <label htmlFor="date" className="form-label">
-                        Date
-                      </label>
+                  {/* Date and Video Category Row */}
+                  <div className="form-input-group">
+                    <div className="flex-1">
+                      <label htmlFor="date" className="form-label">Date</label>
                       <input
                         type="date"
                         id="date"
+                        name="date"
                         value={formData.date}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                         className="form-input"
@@ -560,14 +534,13 @@ export default function EditorDashboard() {
                       />
                     </div>
                     
-                    <div className="form-input-group">
-                      <label htmlFor="videoCategory" className="form-label">
-                        Video Category
-                      </label>
+                    <div className="flex-1">
+                      <label htmlFor="videoCategory" className="form-label">Video Category</label>
                       <select
                         id="videoCategory"
+                        name="videoCategory"
                         value={formData.videoCategory}
-                        onChange={(e) => setFormData({ ...formData, videoCategory: e.target.value as 'course' | 'marketing' | 'leave' })}
+                        onChange={(e) => setFormData({ ...formData, videoCategory: e.target.value as any })}
                         className="form-input"
                         required
                       >
@@ -576,48 +549,71 @@ export default function EditorDashboard() {
                         <option value="leave">Leave</option>
                       </select>
                     </div>
-                    
-                    <div className="form-input-group">
-                      <label htmlFor="videosCompleted" className="form-label">
-                        {formData.videoCategory === 'marketing' ? 'Marketing Videos (Max 0.5/day)' : 
-                         formData.videoCategory === 'leave' ? 'Videos Completed (Should be 0)' : 
-                         'Videos Completed Today'}
-                      </label>
+                  </div>
+
+                  {/* Shift Time Row */}
+                  <div className="form-input-group">
+                    <div className="flex-1">
+                      <label htmlFor="shiftStart" className="form-label">Shift Start Time</label>
                       <input
-                        type={formData.videoCategory === 'marketing' ? 'number' : 'number'}
-                        id="videosCompleted"
-                        value={formData.videosCompleted}
-                        onChange={(e) => setFormData({ ...formData, videosCompleted: e.target.value })}
-                        placeholder={formData.videoCategory === 'marketing' ? '0.5' : '3'}
-                        min={formData.videoCategory === 'leave' ? '0' : '0'}
-                        max={formData.videoCategory === 'marketing' ? '0.5' : undefined}
-                        step={formData.videoCategory === 'marketing' ? '0.1' : '1'}
+                        type="time"
+                        id="shiftStart"
+                        name="shiftStart"
+                        value={formData.shiftStart}
+                        onChange={(e) => setFormData({ ...formData, shiftStart: e.target.value })}
                         className="form-input"
                         required
                       />
-                      {formData.videoCategory === 'marketing' && (
-                        <p className="form-helper-text info">
-                          1 complete marketing video = 6 videos. Max 0.5 per day.
-                        </p>
-                      )}
-                      {formData.videoCategory === 'leave' && (
-                        <p className="form-helper-text warning">
-                          Leave deducts 3 videos from daily target.
-                        </p>
-                      )}
                     </div>
                     
-                    <div className="form-input-group">
-                      <label htmlFor="remarks" className="form-label">
-                        Remarks (Optional)
+                    <div className="flex-1">
+                      <label htmlFor="shiftEnd" className="form-label">Shift End Time</label>
+                      <input
+                        type="time"
+                        id="shiftEnd"
+                        name="shiftEnd"
+                        value={formData.shiftEnd}
+                        onChange={(e) => setFormData({ ...formData, shiftEnd: e.target.value })}
+                        className="form-input"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Videos Completed Row */}
+                  <div className="form-input-group">
+                    <div className="flex-1">
+                      <label htmlFor="videosCompleted" className="form-label">
+                        {formData.videoCategory === 'marketing' ? 'Marketing Videos (0.5 per day)' : 
+                         formData.videoCategory === 'leave' ? 'Leave Day' : 'Videos Completed Today'}
                       </label>
+                      <input
+                        type="number"
+                        id="videosCompleted"
+                        name="videosCompleted"
+                        value={formData.videosCompleted}
+                        onChange={(e) => setFormData({ ...formData, videosCompleted: e.target.value })}
+                        className="form-input"
+                        min={formData.videoCategory === 'marketing' ? 0 : 0}
+                        max={formData.videoCategory === 'marketing' ? 0.5 : 10}
+                        step={formData.videoCategory === 'marketing' ? 0.5 : 1}
+                        placeholder={formData.videoCategory === 'marketing' ? '0.5' : 
+                                   formData.videoCategory === 'leave' ? '0' : '3'}
+                        required
+                        disabled={formData.videoCategory === 'leave'}
+                      />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <label htmlFor="remarks" className="form-label">Remarks (Optional)</label>
                       <input
                         type="text"
                         id="remarks"
+                        name="remarks"
                         value={formData.remarks}
                         onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                        placeholder="Any notes about today's work"
                         className="form-input"
+                        placeholder="Any notes about today's work"
                       />
                     </div>
                   </div>
