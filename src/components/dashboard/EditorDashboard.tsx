@@ -73,6 +73,8 @@ export default function EditorDashboard() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [successDetails, setSuccessDetails] = useState<{ date: string; videos: string; category: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -239,9 +241,41 @@ export default function EditorDashboard() {
       });
 
       if (response.ok) {
-        setFormMessage({ type: 'success', text: 'Entry added successfully!' });
+        const successMessage = `🎉 Great job! You've successfully added your productivity entry for ${new Date(formData.date).toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        })}. You completed ${formData.videosCompleted} ${formData.videoCategory === 'course' ? 'course video(s)' : formData.videoCategory === 'marketing' ? 'marketing video(s)' : 'leave day'}. Keep up the excellent work! 🚀`;
+        
+        setFormMessage({ type: 'success', text: successMessage });
+        
+        // Set success notification details
+        setSuccessDetails({
+          date: new Date(formData.date).toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          videos: formData.videosCompleted,
+          category: formData.videoCategory
+        });
+        setShowSuccessNotification(true);
+        
         resetForm();
         fetchUserData(); // Refresh data to show new entry
+        
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => {
+          setFormMessage(null);
+        }, 5000);
+        
+        // Auto-hide success notification after 8 seconds
+        setTimeout(() => {
+          setShowSuccessNotification(false);
+          setSuccessDetails(null);
+        }, 8000);
       } else {
         const errorData = await response.json();
         setFormMessage({ type: 'error', text: errorData.error || 'Failed to add entry' });
@@ -314,6 +348,37 @@ export default function EditorDashboard() {
           </div>
         </div>
 
+        {/* Success Notification */}
+        {showSuccessNotification && successDetails && (
+          <div className="mb-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl shadow-lg">
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600 text-2xl">🎉</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-green-800 mb-2">
+                  Entry Submitted Successfully!
+                </h3>
+                <p className="text-green-700 mb-2">
+                  Great job! You've successfully added your productivity entry for <span className="font-semibold">{successDetails.date}</span>.
+                </p>
+                <p className="text-green-700">
+                  You completed <span className="font-semibold">{successDetails.videos}</span> {successDetails.category === 'course' ? 'course video(s)' : successDetails.category === 'marketing' ? 'marketing video(s)' : 'leave day'}. Keep up the excellent work! 🚀
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowSuccessNotification(false);
+                  setSuccessDetails(null);
+                }}
+                className="flex-shrink-0 text-green-500 hover:text-green-700 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Main Content */}
         <div className="dashboard-main">
           {/* Period Selector */}
@@ -364,12 +429,29 @@ export default function EditorDashboard() {
 
                 {/* Form Message Display */}
                 {formMessage && (
-                  <div className={`mb-4 p-3 rounded-lg ${
+                  <div className={`mb-4 p-4 rounded-lg border-2 shadow-sm ${
                     formMessage.type === 'success' 
-                      ? 'bg-green-50 border border-green-200 text-green-700' 
-                      : 'bg-red-50 border border-red-200 text-red-700'
+                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 text-green-800' 
+                      : 'bg-red-50 border-red-200 text-red-700'
                   }`}>
-                    {formMessage.text}
+                    <div className="flex items-start space-x-3">
+                      {formMessage.type === 'success' ? (
+                        <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                          <span className="text-green-600 text-lg">✓</span>
+                        </div>
+                      ) : (
+                        <div className="flex-shrink-0 w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
+                          <span className="text-red-600 text-lg">⚠</span>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className={`font-medium ${
+                          formMessage.type === 'success' ? 'text-green-800' : 'text-red-800'
+                        }`}>
+                          {formMessage.text}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
 
