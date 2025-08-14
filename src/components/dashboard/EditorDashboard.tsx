@@ -355,18 +355,18 @@ export default function EditorDashboard() {
           {!showEntryForm ? (
             <button
               onClick={() => setShowEntryForm(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover-bg-blue-700 transition-colors duration-200"
+              className="flex items-center space-x-3 px-6 py-3 bg-blue-600 text-white rounded-lg hover-bg-blue-700 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
             >
               <Plus className="w-4 h-4" />
               <span>Add Today's Entry</span>
             </button>
           ) : (
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Add Video Entry</h3>
+            <div className="form-section">
+              <div className="form-section-header">
+                <h3 className="form-section-title">Add Video Entry</h3>
                 <button
                   onClick={resetForm}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="form-close-button"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -374,25 +374,25 @@ export default function EditorDashboard() {
               
               {/* Target Summary */}
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Daily & Weekly Targets</h4>
+                <h4 className="font-semibold text-blue-900 mb-3 text-base">Daily & Weekly Targets</h4>
                 <div className="grid grid-cols-1 md-grid-cols-3 gap-4 text-sm">
                   <div>
-                    <span className="font-medium text-blue-800">Daily Target:</span>
-                    <span className="ml-2 text-blue-700">3 videos</span>
+                    <span className="font-semibold text-blue-800">Daily Target:</span>
+                    <span className="ml-2 text-blue-700 font-medium">3 videos</span>
                   </div>
                   <div>
-                    <span className="font-medium text-blue-800">Weekly Target:</span>
-                    <span className="ml-2 text-blue-700">15 videos</span>
+                    <span className="font-semibold text-blue-800">Weekly Target:</span>
+                    <span className="ml-2 text-blue-700 font-medium">15 videos</span>
                   </div>
                   <div>
-                    <span className="font-medium text-blue-800">Marketing Video:</span>
-                    <span className="ml-2 text-blue-700">1 complete = 6 videos</span>
+                    <span className="font-semibold text-blue-800">Marketing Video:</span>
+                    <span className="ml-2 text-blue-700 font-medium">1 complete = 6 videos</span>
                   </div>
                 </div>
-                <div className="mt-3 text-xs text-blue-600">
-                  <p>• Course videos: 1 video = 1 video</p>
-                  <p>• Marketing videos: Max 0.5 per day, need 2 consecutive days to complete 1</p>
-                  <p>• Leave: Deducts 3 videos from daily target</p>
+                <div className="mt-4 text-sm text-blue-700">
+                  <p className="mb-1">• Course videos: 1 video = 1 video</p>
+                  <p className="mb-1">• Marketing videos: Max 0.5 per day, need 2 consecutive days to complete 1</p>
+                  <p className="mb-0">• Leave: Deducts 3 videos from daily target</p>
                 </div>
               </div>
               
@@ -406,10 +406,10 @@ export default function EditorDashboard() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmitEntry} className="space-y-4">
-                <div className="grid grid-cols-1 md-grid-cols-2 lg-grid-cols-4 gap-4">
-                  <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+              <form onSubmit={handleSubmitEntry} className="space-y-6">
+                <div className="grid grid-cols-1 md-grid-cols-2 lg-grid-cols-4 gap-6">
+                  <div className="form-input-group">
+                    <label htmlFor="date" className="form-label">
                       Date
                     </label>
                     <input
@@ -417,20 +417,20 @@ export default function EditorDashboard() {
                       id="date"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus-ring-2 focus-ring-blue-500 focus-border-transparent"
+                      className="form-input"
                       required
                     />
                   </div>
                   
-                  <div>
-                    <label htmlFor="videoCategory" className="block text-sm font-medium text-gray-700 mb-1">
+                  <div className="form-input-group">
+                    <label htmlFor="videoCategory" className="form-label">
                       Video Category
                     </label>
                     <select
                       id="videoCategory"
                       value={formData.videoCategory}
                       onChange={(e) => setFormData({ ...formData, videoCategory: e.target.value as 'course' | 'marketing' | 'leave' })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus-ring-2 focus-ring-blue-500 focus-border-transparent"
+                      className="form-input"
                       required
                     >
                       <option value="course">Course Video</option>
@@ -439,8 +439,8 @@ export default function EditorDashboard() {
                     </select>
                   </div>
                   
-                  <div>
-                    <label htmlFor="videosCompleted" className="block text-sm font-medium text-gray-700 mb-1">
+                  <div className="form-input-group">
+                    <label htmlFor="videosCompleted" className="form-label">
                       {formData.videoCategory === 'marketing' ? 'Marketing Videos (Max 0.5/day)' : 
                        formData.videoCategory === 'leave' ? 'Videos Completed (Should be 0)' : 
                        'Videos Completed Today'}
@@ -454,23 +454,23 @@ export default function EditorDashboard() {
                       min={formData.videoCategory === 'leave' ? '0' : '0'}
                       max={formData.videoCategory === 'marketing' ? '0.5' : undefined}
                       step={formData.videoCategory === 'marketing' ? '0.1' : '1'}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus-ring-2 focus-ring-blue-500 focus-border-transparent"
+                      className="form-input"
                       required
                     />
                     {formData.videoCategory === 'marketing' && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="form-helper-text info">
                         1 complete marketing video = 6 videos. Max 0.5 per day.
                       </p>
                     )}
                     {formData.videoCategory === 'leave' && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="form-helper-text warning">
                         Leave deducts 3 videos from daily target.
                       </p>
                     )}
                   </div>
                   
-                  <div>
-                    <label htmlFor="remarks" className="block text-sm font-medium text-gray-700 mb-1">
+                  <div className="form-input-group">
+                    <label htmlFor="remarks" className="form-label">
                       Remarks (Optional)
                     </label>
                     <input
@@ -479,27 +479,27 @@ export default function EditorDashboard() {
                       value={formData.remarks}
                       onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                       placeholder="Any notes about today's work"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus-ring-2 focus-ring-blue-500 focus-border-transparent"
+                      className="form-input"
                     />
                   </div>
                 </div>
                 
-                <div className="flex justify-end space-x-3">
+                <div className="flex justify-end space-x-4 pt-4">
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover-bg-gray-200 transition-colors duration-200"
+                    className="btn-enhanced secondary"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover-bg-blue-700 disabled-opacity-50 disabled-cursor-not-allowed transition-colors duration-200 flex items-center space-x-2"
+                    className="btn-enhanced primary disabled-opacity-50 disabled-cursor-not-allowed"
                   >
                     {submitting ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="loading-spinner w-4 h-4" />
                         <span>Submitting...</span>
                       </>
                     ) : (
