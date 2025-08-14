@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
-import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,15 +32,11 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // Hash password
-        const hashedPassword = await bcrypt.hash(user.password, 12);
-
-        // Create user
+        // Create user with plain password (will be hashed by pre-save hook)
         await User.create({
-          firstName: user.name.split(' ')[0] || user.name,
-          lastName: user.name.split(' ').slice(1).join(' ') || '',
+          name: user.name,
           email: user.email,
-          password: hashedPassword,
+          password: user.password,
           role: user.role,
           isActive: true
         });
