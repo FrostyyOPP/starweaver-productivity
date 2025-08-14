@@ -355,7 +355,7 @@ export default function EditorDashboard() {
           {!showEntryForm ? (
             <button
               onClick={() => setShowEntryForm(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover-bg-blue-700 transition-colors duration-200"
             >
               <Plus className="w-4 h-4" />
               <span>Add Today's Entry</span>
@@ -375,7 +375,7 @@ export default function EditorDashboard() {
               {/* Target Summary */}
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 className="font-medium text-blue-900 mb-2">Daily & Weekly Targets</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 md-grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="font-medium text-blue-800">Daily Target:</span>
                     <span className="ml-2 text-blue-700">3 videos</span>
@@ -407,7 +407,7 @@ export default function EditorDashboard() {
               )}
 
               <form onSubmit={handleSubmitEntry} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md-grid-cols-2 lg-grid-cols-4 gap-4">
                   <div>
                     <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
                       Date
@@ -417,7 +417,7 @@ export default function EditorDashboard() {
                       id="date"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus-ring-2 focus-ring-blue-500 focus-border-transparent"
                       required
                     />
                   </div>
@@ -430,7 +430,7 @@ export default function EditorDashboard() {
                       id="videoCategory"
                       value={formData.videoCategory}
                       onChange={(e) => setFormData({ ...formData, videoCategory: e.target.value as 'course' | 'marketing' | 'leave' })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus-ring-2 focus-ring-blue-500 focus-border-transparent"
                       required
                     >
                       <option value="course">Course Video</option>
@@ -454,7 +454,7 @@ export default function EditorDashboard() {
                       min={formData.videoCategory === 'leave' ? '0' : '0'}
                       max={formData.videoCategory === 'marketing' ? '0.5' : undefined}
                       step={formData.videoCategory === 'marketing' ? '0.1' : '1'}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus-ring-2 focus-ring-blue-500 focus-border-transparent"
                       required
                     />
                     {formData.videoCategory === 'marketing' && (
@@ -479,7 +479,7 @@ export default function EditorDashboard() {
                       value={formData.remarks}
                       onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                       placeholder="Any notes about today's work"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus-ring-2 focus-ring-blue-500 focus-border-transparent"
                     />
                   </div>
                 </div>
@@ -488,14 +488,14 @@ export default function EditorDashboard() {
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover-bg-gray-200 transition-colors duration-200"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center space-x-2"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover-bg-blue-700 disabled-opacity-50 disabled-cursor-not-allowed transition-colors duration-200 flex items-center space-x-2"
                   >
                     {submitting ? (
                       <>
