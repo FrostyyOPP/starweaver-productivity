@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Star, TrendingUp, Clock, Target, Award, Calendar, BarChart3, Users, Plus, LogOut } from 'lucide-react';
+import { Star, TrendingUp, Clock, Target, Award, Calendar, BarChart3, Users, Plus, LogOut, X, UserPlus, UserMinus } from 'lucide-react';
 
 interface TeamMember {
   _id: string;
@@ -247,184 +247,188 @@ export default function ManagerDashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* Header */}
-      <div className="dashboard-header">
-        <div className="dashboard-header-content">
-          <div className="dashboard-logo">
-            <Star className="w-8 h-8 text-yellow-500" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              STARWEAVER
-            </h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <p className="text-sm text-gray-600">Team Manager</p>
-              <p className="font-semibold text-gray-900">{user?.name}</p>
+      <div className="dashboard-content">
+        {/* Header */}
+        <div className="dashboard-header">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+              <Star className="w-5 h-5 text-white" />
             </div>
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold relative group cursor-pointer">
-              {user?.name?.charAt(0).toUpperCase()}
-              {/* Logout dropdown that appears on hover over initial */}
-              <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-10 transform origin-top scale-95 group-hover:scale-100">
-                <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-150 w-full text-left"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span className="font-medium">Logout</span>
-                  </button>
-                </div>
+            <h1 className="dashboard-title">STARWEAVER</h1>
+          </div>
+          
+          <div className="user-section">
+            <div className="text-right mr-4">
+              <p className="text-sm text-gray-400">Team Manager</p>
+              <p className="text-lg font-semibold text-white">{user?.name || 'Manager'}</p>
+            </div>
+            
+            {/* User Initial with Hover Dropdown */}
+            <div className="relative group">
+              <div className="user-initial">
+                {user?.name?.charAt(0)?.toUpperCase() || 'M'}
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="dashboard-main">
-        {/* Period Selector and Add Member Button */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Team Dashboard</h2>
-          <div className="flex space-x-3">
-            <div className="flex space-x-2">
-              {['week', 'month'].map((period) => (
+              
+              {/* Logout Dropdown */}
+              <div className="logout-dropdown">
                 <button
-                  key={period}
-                  onClick={() => setSelectedPeriod(period)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedPeriod === period
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  onClick={handleLogout}
+                  className="logout-button"
                 >
-                  {period.charAt(0).toUpperCase() + period.slice(1)}
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
                 </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="btn btn-primary flex items-center space-x-2"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span>Add Member</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Message Display */}
-        {message && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === 'success' 
-              ? 'bg-green-50 border border-green-200 text-green-700' 
-              : 'bg-red-50 border border-red-200 text-red-700'
-          }`}>
-            {message.text}
-          </div>
-        )}
-
-        {/* Team Stats Grid */}
-        <div className="dashboard-grid">
-          <div className="stat-card">
-            <div className="stat-icon">
-              <Users className="w-6 h-6" />
-            </div>
-            <div className="stat-value">{teamStats.totalMembers || 0}</div>
-            <div className="stat-label">Team Members</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">
-              <Target className="w-6 h-6" />
-            </div>
-            <div className="stat-value">{teamStats.totalVideos || 0}</div>
-            <div className="stat-label">Total Videos</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">
-              <Clock className="w-6 h-6" />
-            </div>
-            <div className="stat-value">{(teamStats.totalHours || 0).toFixed(1)}h</div>
-            <div className="stat-label">Total Hours</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-            <div className="stat-value">{(teamStats.averageProductivity || 0).toFixed(1)}%</div>
-            <div className="stat-label">Team Productivity</div>
-          </div>
-        </div>
-
-        {/* Team Members List */}
-        <div className="card mt-8">
-          <div className="card-header">
-            <h3 className="card-title">Team Members</h3>
-            <p className="text-gray-600">Manage your team members and view their status</p>
-          </div>
-          <div className="card-content">
-            {teamMembers.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No team members yet. Add your first team member!</p>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {teamMembers.map((member) => (
-                  <div key={member._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                          {member.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{member.name}</h4>
-                          <p className="text-sm text-gray-600">{member.email}</p>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              member.role === 'admin' ? 'bg-red-100 text-red-800' :
-                              member.role === 'manager' ? 'bg-green-100 text-green-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
-                            </span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              member.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {member.isActive ? 'Active' : 'Inactive'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">Last login</p>
-                        <p className="text-sm font-medium">{formatDate(member.lastLogin)}</p>
-                        <button
-                          onClick={() => handleRemoveTeamMember(member._id)}
-                          className="mt-2 text-red-600 hover:text-red-800 transition-colors"
-                          title="Remove team member"
-                        >
-                          <UserMinus className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="dashboard-main">
+          {/* Period Selector and Add Member Button */}
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">Team Dashboard</h2>
+            <div className="flex space-x-3">
+              <div className="flex space-x-2">
+                {['week', 'month'].map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setSelectedPeriod(period)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      selectedPeriod === period
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {period.charAt(0).toUpperCase() + period.slice(1)}
+                  </button>
                 ))}
               </div>
-            )}
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="btn btn-primary flex items-center space-x-2"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Add Member</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Message Display */}
+          {message && (
+            <div className={`mb-6 p-4 rounded-lg ${
+              message.type === 'success' 
+                ? 'bg-green-50 border border-green-200 text-green-700' 
+                : 'bg-red-50 border border-red-200 text-red-700'
+            }`}>
+              {message.text}
+            </div>
+          )}
+
+          {/* Team Stats Grid */}
+          <div className="dashboard-grid">
+            <div className="stat-card">
+              <div className="stat-icon">
+                <Users className="w-6 h-6" />
+              </div>
+              <div className="stat-value">{teamStats.totalMembers || 0}</div>
+              <div className="stat-label">Team Members</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon">
+                <Target className="w-6 h-6" />
+              </div>
+              <div className="stat-value">{teamStats.totalVideos || 0}</div>
+              <div className="stat-label">Total Videos</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon">
+                <Clock className="w-6 h-6" />
+              </div>
+              <div className="stat-value">{(teamStats.totalHours || 0).toFixed(1)}h</div>
+              <div className="stat-label">Total Hours</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div className="stat-value">{(teamStats.averageProductivity || 0).toFixed(1)}%</div>
+              <div className="stat-label">Team Productivity</div>
+            </div>
+          </div>
+
+          {/* Team Members List */}
+          <div className="card mt-8">
+            <div className="card-header">
+              <h3 className="card-title">Team Members</h3>
+              <p className="text-gray-600">Manage your team members and view their status</p>
+            </div>
+            <div className="card-content">
+              {teamMembers.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No team members yet. Add your first team member!</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {teamMembers.map((member) => (
+                    <div key={member._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            {member.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{member.name}</h4>
+                            <p className="text-sm text-gray-600">{member.email}</p>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                member.role === 'admin' ? 'bg-red-100 text-red-800' :
+                                member.role === 'manager' ? 'bg-green-100 text-green-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}>
+                                {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                              </span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                member.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {member.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500">Last login</p>
+                          <p className="text-sm font-medium">{formatDate(member.lastLogin)}</p>
+                          <button
+                            onClick={() => handleRemoveTeamMember(member._id)}
+                            className="mt-2 text-red-600 hover:text-red-800 transition-colors"
+                            title="Remove team member"
+                          >
+                            <UserMinus className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Add Team Member Modal */}
-      <AddTeamMemberModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdd={handleAddTeamMember}
-        loading={addMemberLoading}
-      />
+        {/* Add Team Member Modal */}
+        <AddTeamMemberModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAddTeamMember}
+          loading={addMemberLoading}
+        />
+      </div>
     </div>
   );
 }
