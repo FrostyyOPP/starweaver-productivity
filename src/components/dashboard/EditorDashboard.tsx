@@ -350,8 +350,8 @@ export default function EditorDashboard() {
           </div>
         </div>
 
-        {/* Add Entry Section */}
-        <div className="mb-8">
+        {/* Add Today's Entry Button */}
+        <div className="dashboard-section">
           {!showEntryForm ? (
             <button
               onClick={() => setShowEntryForm(true)}
@@ -361,7 +361,7 @@ export default function EditorDashboard() {
               <span>Add Today's Entry</span>
             </button>
           ) : (
-            <div className="form-section">
+            <div className="form-section entry-form-container">
               <div className="form-section-header">
                 <h3 className="form-section-title">Add Video Entry</h3>
                 <button
@@ -514,48 +514,51 @@ export default function EditorDashboard() {
             </div>
           )}
         </div>
-
+        
+        {/* Component separator with visual line */}
+        <div className="component-separator"></div>
+        
         {/* Stats Grid */}
-        <div className="dashboard-grid">
-          <div className="stat-card">
-            <div className="stat-icon">
-              <BarChart3 className="w-6 h-6" />
+        <div className="dashboard-section">
+          <div className="dashboard-grid">
+            <div className="stat-card">
+              <div className="stat-icon">
+                <BarChart3 className="w-6 h-6" />
+              </div>
+              <div className="stat-value">{stats.totalEntries || 0}</div>
+              <div className="stat-label">Total Entries</div>
             </div>
-            <div className="stat-value">{stats.totalEntries || 0}</div>
-            <div className="stat-label">Total Entries</div>
-          </div>
 
-          <div className="stat-card">
-            <div className="stat-icon">
-              <Target className="w-6 h-6" />
+            <div className="stat-card">
+              <div className="stat-icon">
+                <Target className="w-6 h-6" />
+              </div>
+              <div className="stat-value">{stats.totalVideos || 0}</div>
+              <div className="stat-label">Videos Completed</div>
             </div>
-            <div className="stat-value">{stats.totalVideos || 0}</div>
-            <div className="stat-label">Videos Completed</div>
-          </div>
 
-          <div className="stat-card">
-            <div className="stat-icon">
-              <Clock className="w-6 h-6" />
+            <div className="stat-card">
+              <div className="stat-icon">
+                <Clock className="w-6 h-6" />
+              </div>
+              <div className="stat-value">{(stats.totalHours || 0).toFixed(1)}h</div>
+              <div className="stat-label">Total Hours</div>
             </div>
-            <div className="stat-value">{(stats.totalHours || 0).toFixed(1)}h</div>
-            <div className="stat-label">Total Hours</div>
-          </div>
 
-          <div className="stat-card">
-            <div className="stat-icon">
-              <TrendingUp className="w-6 h-6" />
+            <div className="stat-card">
+              <div className="stat-icon">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div className="stat-value">{(stats.averageProductivity || 0).toFixed(1)}%</div>
+              <div className="stat-label">Avg Productivity</div>
             </div>
-            <div className="stat-value">{(stats.averageProductivity || 0).toFixed(1)}%</div>
-            <div className="stat-label">Avg Productivity</div>
           </div>
         </div>
 
-        {/* Recent Entries */}
-        <div className="card mt-8">
-          <div className="card-header">
-            <h3 className="card-title">Recent Entries</h3>
-            <p className="text-gray-600">Your latest productivity entries</p>
-          </div>
+        {/* Recent Entries Section */}
+        <div className="dashboard-section recent-entries-section">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Entries</h3>
+          <p className="text-gray-600">Your latest productivity entries</p>
           <div className="card-content">
             {entries.length === 0 ? (
               <div className="text-center py-8">
@@ -626,3 +629,4 @@ export default function EditorDashboard() {
     </div>
   );
 }
+ 

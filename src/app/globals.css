@@ -1792,3 +1792,152 @@ button:disabled {
     font-size: 1.5rem;
   }
 }
+
+/* Component spacing and separation */
+.component-separator {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.section-spacing {
+  margin-bottom: 2.5rem;
+}
+
+.bottom-spacing {
+  margin-bottom: 2rem;
+}
+
+.form-bottom-spacing {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+}
+
+/* Enhanced dashboard layout spacing */
+.dashboard-main-content {
+  padding-bottom: 3rem;
+}
+
+.dashboard-section {
+  margin-bottom: 3rem;
+}
+
+.dashboard-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Stats grid spacing */
+.stats-grid {
+  margin-top: 2rem;
+  margin-bottom: 3rem;
+}
+
+/* Entry form bottom spacing */
+.entry-form-container {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+}
+
+/* Recent entries spacing */
+.recent-entries-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* Dashboard main container spacing */
+.dashboard-main {
+  padding: 2rem 0;
+}
+
+.dashboard-main > * + * {
+  margin-top: 2rem;
+}
+
+/* Enhanced card spacing */
+.card {
+  margin-bottom: 2rem;
+}
+
+.card:last-child {
+  margin-bottom: 0;
+}
+
+/* Form section enhanced spacing */
+.form-section.entry-form-container {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* Stats grid enhanced spacing */
+.dashboard-grid {
+  margin-bottom: 3rem;
+  gap: 2rem;
+}
+
+/* Recent entries enhanced spacing */
+.recent-entries-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #f3f4f6;
+}
+
+.recent-entries-section h3 {
+  margin-bottom: 1rem;
+  color: #111827;
+  font-weight: 700;
+}
+
+.recent-entries-section p {
+  margin-bottom: 1.5rem;
+  color: #6b7280;
+}
+
+/* Entry list spacing */
+.entry-list {
+  margin-top: 1.5rem;
+}
+
+.entry-item {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.entry-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.entry-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Empty state spacing */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6b7280;
+}
+
+.empty-state-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  color: #d1d5db;
+}
+
+.empty-state-text {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-subtext {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
