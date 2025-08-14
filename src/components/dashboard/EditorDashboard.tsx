@@ -498,22 +498,6 @@ export default function EditorDashboard() {
                       )}
                     </button>
                   </div>
-                  
-                  {/* Bottom Close Button */}
-                  <div className="flex justify-center pt-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        console.log('Bottom close button clicked');
-                        setShowEntryForm(false);
-                        resetForm();
-                      }}
-                      className="text-gray-500 hover:text-gray-700 text-sm flex items-center space-x-1 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                      <span>Close Form</span>
-                    </button>
-                  </div>
                 </form>
               </div>
             )}
