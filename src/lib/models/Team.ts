@@ -5,6 +5,7 @@ export interface ITeam extends mongoose.Document {
   description: string;
   members: mongoose.Types.ObjectId[];
   admins: mongoose.Types.ObjectId[];
+  admin: mongoose.Types.ObjectId; // Single admin field for backward compatibility
   goals: {
     dailyTarget: number;
     weeklyTarget: number;
@@ -42,6 +43,11 @@ const teamSchema = new mongoose.Schema<ITeam>({
     ref: 'User',
     required: true
   }],
+  // Add a single admin field for backward compatibility
+  admin: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   goals: {
     dailyTarget: {
       type: Number,

@@ -23,32 +23,54 @@ export async function GET(request: NextRequest) {
     const teams = await Team.find({ 
       $or: [
         { admin: decoded.userId },
+        { admins: decoded.userId },
         { members: decoded.userId }
       ]
     }).populate('members', 'name email role isActive lastLogin');
 
-    // For now, return a single team with the current user and any team members
-    // In a real app, you might have multiple teams
-    const user = await User.findById(decoded.userId);
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    // If no teams exist, create a default team for the user
+    if (teams.length === 0) {
+      const user = await User.findById(decoded.userId);
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      // Create a default team for the user
+      const defaultTeam = new Team({
+        name: `${user.name}'s Team`,
+        description: 'Default team',
+        members: [decoded.userId],
+        admins: [decoded.userId],
+        admin: decoded.userId, // Set the single admin field
+        goals: {
+          dailyTarget: 15,
+          weeklyTarget: 90,
+          monthlyTarget: 360
+        },
+        settings: {
+          allowMemberInvites: true,
+          requireApproval: false,
+          visibility: 'private'
+        }
+      });
+
+      await defaultTeam.save();
+      
+      // Return the default team with populated members
+      const populatedTeam = await Team.findById(defaultTeam._id).populate('members', 'name email role isActive lastLogin');
+      
+      return NextResponse.json({
+        members: populatedTeam?.members || []
+      });
     }
 
-    // Create a default team structure for the user
-    const teamData = {
-      members: [
-        {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          isActive: user.isActive,
-          lastLogin: user.lastLogin
-        }
-      ]
-    };
-
-    return NextResponse.json(teamData);
+    // Return the first team's members (for simplicity, assuming one team per user)
+    const team = teams[0];
+    const populatedTeam = await Team.findById(team._id).populate('members', 'name email role isActive lastLogin');
+    
+    return NextResponse.json({
+      members: populatedTeam?.members || []
+    });
   } catch (error: any) {
     console.error('Get teams error:', error);
     return NextResponse.json(
@@ -99,6 +121,7 @@ export async function POST(request: NextRequest) {
     const existingTeam = await Team.findOne({
       $or: [
         { admin: decoded.userId },
+        { admins: decoded.userId },
         { members: decoded.userId }
       ],
       members: userToAdd._id
@@ -108,11 +131,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User is already in your team' }, { status: 409 });
     }
 
-    // Add user to team (for now, we'll create a simple team structure)
-    // In a real app, you might have more complex team management
+    // Find or create team
     let team = await Team.findOne({
       $or: [
         { admin: decoded.userId },
+        { admins: decoded.userId },
         { members: decoded.userId }
       ]
     });
@@ -121,8 +144,20 @@ export async function POST(request: NextRequest) {
       // Create new team if none exists
       team = new Team({
         name: `${user.name}'s Team`,
-        admin: decoded.userId,
-        members: [decoded.userId, userToAdd._id]
+        description: 'Default team',
+        members: [decoded.userId, userToAdd._id],
+        admins: [decoded.userId],
+        admin: decoded.userId, // Set the single admin field
+        goals: {
+          dailyTarget: 15,
+          weeklyTarget: 90,
+          monthlyTarget: 360
+        },
+        settings: {
+          allowMemberInvites: true,
+          requireApproval: false,
+          visibility: 'private'
+        }
       });
     } else {
       // Add member to existing team
@@ -133,9 +168,13 @@ export async function POST(request: NextRequest) {
 
     await team.save();
 
+    // Return the updated team with populated members
+    const updatedTeam = await Team.findById(team._id).populate('members', 'name email role isActive lastLogin');
+
     return NextResponse.json({ 
       message: 'Team member added successfully',
-      team: team
+      team: updatedTeam,
+      members: updatedTeam?.members || []
     });
   } catch (error: any) {
     console.error('Add team member error:', error);
