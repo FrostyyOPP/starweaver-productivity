@@ -680,10 +680,7 @@ export default function EditorDashboard() {
           {/* Productivity Charts */}
           <div className="dashboard-section">
             <h3 className="section-title">Productivity Analytics</h3>
-            <div className="charts-container">
-              <ProductivityCharts entries={entries} period="week" />
-              <ProductivityCharts entries={entries} period="month" />
-            </div>
+            <ProductivityCharts entries={entries} />
           </div>
 
           {/* Recent Entries Section */}

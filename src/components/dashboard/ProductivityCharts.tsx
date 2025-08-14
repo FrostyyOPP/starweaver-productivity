@@ -30,20 +30,33 @@ interface ChartData {
 
 interface ProductivityChartsProps {
   entries: any[];
-  period: 'week' | 'month';
 }
 
-const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries, period }) => {
+const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar' | 'pie'>('line');
   const [activeMetric, setActiveMetric] = useState<'videos' | 'productivity' | 'hours'>('videos');
+  const [period, setPeriod] = useState<'week' | 'month'>('week');
 
-  // Process data for charts
+  // Process data for charts based on selected period
   const processChartData = (): ChartData[] => {
     if (!entries || entries.length === 0) return [];
 
     const sortedEntries = [...entries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
-    return sortedEntries.map(entry => ({
+    // Filter entries based on period
+    const now = new Date();
+    const filteredEntries = sortedEntries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      if (period === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return entryDate >= weekAgo;
+      } else {
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        return entryDate >= monthAgo;
+      }
+    });
+    
+    return filteredEntries.map(entry => ({
       date: new Date(entry.date).toLocaleDateString('en-US', { 
         month: 'short', 
         day: 'numeric' 
@@ -59,7 +72,19 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries, period
   const processPieData = () => {
     if (!entries || entries.length === 0) return [];
 
-    const categoryCounts = entries.reduce((acc: any, entry) => {
+    const now = new Date();
+    const filteredEntries = entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      if (period === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return entryDate >= weekAgo;
+      } else {
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        return entryDate >= monthAgo;
+      }
+    });
+
+    const categoryCounts = filteredEntries.reduce((acc: any, entry) => {
       const category = entry.videoCategory || 'course';
       acc[category] = (acc[category] || 0) + 1;
       return acc;
@@ -244,7 +269,7 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries, period
       <div className="chart-container">
         <div className="chart-header">
           <h3 className="chart-title">Productivity Trends</h3>
-          <p className="chart-subtitle">No data available for {period} view</p>
+          <p className="chart-subtitle">No data available</p>
         </div>
         <div className="empty-chart">
           <BarChart3 className="empty-chart-icon" />
@@ -258,15 +283,26 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries, period
     <div className="chart-container">
       <div className="chart-header">
         <div className="chart-title-section">
-          <h3 className="chart-title">
-            {period === 'week' ? 'Weekly' : 'Monthly'} Productivity Trends
-          </h3>
+          <h3 className="chart-title">Productivity Analytics</h3>
           <p className="chart-subtitle">
-            Track your progress over time
+            Track your {period === 'week' ? 'weekly' : 'monthly'} progress
           </p>
         </div>
         
         <div className="chart-controls">
+          {/* Period Selector */}
+          <div className="period-selector">
+            <label className="period-label">Period:</label>
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as 'week' | 'month')}
+              className="period-select"
+            >
+              <option value="week">Weekly</option>
+              <option value="month">Monthly</option>
+            </select>
+          </div>
+
           {/* Metric Selector */}
           <div className="metric-selector">
             <label className="metric-label">Metric:</label>
@@ -344,6 +380,12 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries, period
           <span className="summary-value">
             {getMetricData().reduce((max, item) => item.value > max.value ? item : max).value}
             {activeMetric === 'productivity' ? '%' : activeMetric === 'hours' ? 'h' : ''}
+          </span>
+        </div>
+        <div className="summary-item">
+          <span className="summary-label">Period:</span>
+          <span className="summary-value">
+            {period === 'week' ? '7 Days' : '30 Days'}
           </span>
         </div>
       </div>

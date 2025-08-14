@@ -482,10 +482,7 @@ export default function AdminDashboard() {
               {/* Productivity Charts */}
               <div className="dashboard-section mt-8">
                 <h3 className="section-title">System Analytics</h3>
-                <div className="charts-container">
-                  <ProductivityCharts entries={entries} period="week" />
-                  <ProductivityCharts entries={entries} period="month" />
-                </div>
+                <ProductivityCharts entries={entries} />
               </div>
 
               {/* Quick Actions */}
