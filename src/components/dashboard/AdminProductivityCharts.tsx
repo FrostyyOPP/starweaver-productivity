@@ -167,6 +167,7 @@ const AdminProductivityCharts: React.FC<AdminProductivityChartsProps> = ({
 
   // Create week-based data for last 3 weeks
   const createWeekBasedData = (): ChartData[] => {
+    console.log('📅 Creating week-based data for last 3 weeks');
     const weeks = [];
     const now = new Date();
     
@@ -177,21 +178,41 @@ const AdminProductivityCharts: React.FC<AdminProductivityChartsProps> = ({
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 4);
       
+      console.log(`📅 Week ${3-i}:`, { weekStart, weekEnd });
+      
       let weekEntries = entries.filter(entry => {
         const entryDate = new Date(entry.date);
-        return entryDate >= weekStart && entryDate <= weekEnd;
+        const isValid = entryDate >= weekStart && entryDate <= weekEnd;
+        if (isValid) {
+          console.log(`📅 Entry in week ${3-i}:`, entry);
+        }
+        return isValid;
       });
+
+      console.log(`📅 Entries for week ${3-i}:`, weekEntries.length);
 
       // Apply team/member filters
       if (selectedTeam !== 'all') {
         weekEntries = weekEntries.filter(entry => {
           const member = teamMembers.find(m => m._id === entry.userId);
-          return member && member.role === selectedTeam;
+          const isValid = member && member.role === selectedTeam;
+          if (!isValid) {
+            console.log(`👥 Entry filtered out by team in week ${3-i}:`, { entry, member, selectedTeam });
+          }
+          return isValid;
         });
+        console.log(`👥 Entries after team filter for week ${3-i}:`, weekEntries.length);
       }
 
       if (selectedMember !== 'all') {
-        weekEntries = weekEntries.filter(entry => entry.userId === selectedMember);
+        weekEntries = weekEntries.filter(entry => {
+          const isValid = entry.userId === selectedMember;
+          if (!isValid) {
+            console.log(`👤 Entry filtered out by member in week ${3-i}:`, { entry, selectedMember });
+          }
+          return isValid;
+        });
+        console.log(`👤 Entries after member filter for week ${3-i}:`, weekEntries.length);
       }
       
       const weekData = {
@@ -203,38 +224,67 @@ const AdminProductivityCharts: React.FC<AdminProductivityChartsProps> = ({
         category: 'week'
       };
       
+      console.log(`📊 Week ${3-i} data:`, weekData);
       weeks.push(weekData);
     }
+    
+    console.log('📊 All weeks data:', weeks);
     return weeks;
   };
 
   // Process chart data based on filters
   const processChartData = (): ChartData[] => {
-    if (!entries || entries.length === 0) return [];
+    console.log('🔍 Processing chart data:', { entries: entries?.length, teamMembers: teamMembers?.length, period, selectedTeam, selectedMember });
+    
+    if (!entries || entries.length === 0) {
+      console.log('❌ No entries available');
+      return [];
+    }
 
     if (period === 'last-3-weeks') {
-      return createWeekBasedData();
+      const weekData = createWeekBasedData();
+      console.log('📅 Week-based data:', weekData);
+      return weekData;
     }
 
     const { start, end } = getDateRange(period);
+    console.log('📅 Date range:', { start, end, period });
     
     // Filter entries by date range
     let filteredEntries = entries.filter(entry => {
       const entryDate = new Date(entry.date);
-      return entryDate >= start && entryDate <= end;
+      const isValid = entryDate >= start && entryDate <= end;
+      if (!isValid) {
+        console.log('📅 Entry filtered out by date:', { entryDate, start, end, entry });
+      }
+      return isValid;
     });
+
+    console.log('📅 Entries after date filter:', filteredEntries.length);
 
     // Apply team filter
     if (selectedTeam !== 'all') {
       filteredEntries = filteredEntries.filter(entry => {
         const member = teamMembers.find(m => m._id === entry.userId);
-        return member && member.role === selectedTeam;
+        const isValid = member && member.role === selectedTeam;
+        if (!isValid) {
+          console.log('👥 Entry filtered out by team:', { entry, member, selectedTeam });
+        }
+        return isValid;
       });
+      console.log('👥 Entries after team filter:', filteredEntries.length);
     }
 
     // Apply member filter
     if (selectedMember !== 'all') {
-      filteredEntries = filteredEntries.filter(entry => entry.userId === selectedMember);
+      filteredEntries = filteredEntries.filter(entry => {
+        const isValid = entry.userId === selectedMember;
+        if (!isValid) {
+          console.log('👤 Entry filtered out by member:', { entry, selectedMember });
+        }
+        return isValid;
+      });
+      console.log('👤 Entries after member filter:', filteredEntries.length);
     }
 
     // Group by date and aggregate
@@ -255,13 +305,18 @@ const AdminProductivityCharts: React.FC<AdminProductivityChartsProps> = ({
       acc[dateKey].count += 1;
     }, {} as any);
 
+    console.log('📊 Grouped data:', groupedData);
+
     // Convert to array and calculate averages
-    return Object.values(groupedData).map((item: any) => ({
+    const result = Object.values(groupedData).map((item: any) => ({
       date: item.date,
       videosCompleted: item.videosCompleted,
       productivityScore: item.count > 0 ? Math.round(item.productivityScore / item.count) : 0,
       category: 'aggregated'
     }));
+
+    console.log('📊 Final chart data:', result);
+    return result;
   };
 
   // Process pie chart data
@@ -395,7 +450,23 @@ const AdminProductivityCharts: React.FC<AdminProductivityChartsProps> = ({
         );
 
       default:
-        return null;
+        // Fallback to line chart if no valid chart type
+        return (
+          <LineChart {...commonProps}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line 
+              type="monotone" 
+              dataKey={activeMetric === 'videos' ? 'videosCompleted' : 'productivityScore'} 
+              stroke="#3b82f6" 
+              strokeWidth={2}
+              dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+            />
+          </LineChart>
+        );
     }
   };
 
@@ -447,7 +518,7 @@ const AdminProductivityCharts: React.FC<AdminProductivityChartsProps> = ({
             <ExportButton 
               entries={entries} 
               period={period} 
-              chartRef={chartRef}
+              chartRef={chartRef as React.RefObject<HTMLDivElement>}
             />
           </div>
         </div>

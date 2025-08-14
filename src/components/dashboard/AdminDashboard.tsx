@@ -160,6 +160,16 @@ export default function AdminDashboard() {
     }
   }, [user, selectedPeriod]);
 
+  // Debug logging for chart data
+  useEffect(() => {
+    console.log('🔍 AdminDashboard - Data for charts:', { 
+      entriesLength: entries?.length, 
+      teamMembersLength: teamMembers?.length, 
+      systemStats: systemStats,
+      teamMemberPerformanceLength: teamMemberPerformance?.length
+    });
+  }, [entries, teamMembers, systemStats, teamMemberPerformance]);
+
   const fetchAdminData = async () => {
     try {
       setLoading(true);
