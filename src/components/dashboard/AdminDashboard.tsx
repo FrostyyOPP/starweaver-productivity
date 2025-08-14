@@ -130,6 +130,7 @@ export default function AdminDashboard() {
   const [addMemberLoading, setAddMemberLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'entries'>('overview');
+  const [migrating, setMigrating] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -243,6 +244,34 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'An error occurred while removing team member' });
+    }
+  };
+
+  const handleDataMigration = async () => {
+    if (migrating) return;
+    setMigrating(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch('/api/migrate', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessage({ type: 'success', text: `Successfully migrated ${data.migratedEntries} entries.` });
+        fetchAdminData(); // Refresh data
+      } else {
+        const errorData = await response.json();
+        setMessage({ type: 'error', text: errorData.error || 'Failed to migrate data' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'An error occurred during data migration' });
+    } finally {
+      setMigrating(false);
     }
   };
 
@@ -477,6 +506,16 @@ export default function AdminDashboard() {
                       <Calendar className="w-8 h-8 text-purple-600 mb-2" />
                       <h4 className="font-semibold text-gray-900">View Entries</h4>
                       <p className="text-sm text-gray-600">Monitor all user entries</p>
+                    </button>
+
+                    <button
+                      onClick={handleDataMigration}
+                      disabled={migrating}
+                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <BarChart3 className="w-8 h-8 text-orange-600 mb-2" />
+                      <h4 className="font-semibold text-gray-900">Restore Data</h4>
+                      <p className="text-sm text-gray-600">Migrate legacy entries to restore data</p>
                     </button>
                   </div>
                 </div>

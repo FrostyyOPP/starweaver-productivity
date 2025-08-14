@@ -3,6 +3,11 @@ import mongoose from 'mongoose';
 export interface IEntry extends mongoose.Document {
   userId: mongoose.Types.ObjectId;
   date: Date;
+  // Legacy fields (optional for backward compatibility)
+  shiftStart?: Date;
+  shiftEnd?: Date;
+  totalHours?: number;
+  // Current fields
   videosCompleted: number;
   targetVideos: number;
   productivityScore: number;
@@ -26,6 +31,22 @@ const entrySchema = new mongoose.Schema<IEntry>({
     type: Date,
     required: [true, 'Date is required']
   },
+  // Legacy fields (optional for backward compatibility)
+  shiftStart: {
+    type: Date,
+    required: false
+  },
+  shiftEnd: {
+    type: Date,
+    required: false
+  },
+  totalHours: {
+    type: Number,
+    required: false,
+    min: [0, 'Total hours cannot be negative'],
+    max: [24, 'Total hours cannot exceed 24']
+  },
+  // Current fields
   videosCompleted: {
     type: Number,
     required: [true, 'Videos completed count is required'],
@@ -99,10 +120,78 @@ entrySchema.virtual('completionPercentage').get(function() {
   return Math.round((this.videosCompleted / this.targetVideos) * 100);
 });
 
+// Virtual for shift duration in hours (for backward compatibility)
+entrySchema.virtual('shiftDuration').get(function() {
+  return this.totalHours || 0;
+});
+
 // Method to mark entry as completed
 entrySchema.methods.markCompleted = function() {
   this.isCompleted = true;
   return this.save();
+};
+
+// Static method to migrate legacy entries
+entrySchema.statics.migrateLegacyEntries = async function() {
+  try {
+    // Find entries that have legacy fields but missing current fields
+    const legacyEntries = await this.find({
+      $or: [
+        { shiftStart: { $exists: true } },
+        { shiftEnd: { $exists: true } },
+        { totalHours: { $exists: true } }
+      ]
+    });
+
+    console.log(`Found ${legacyEntries.length} legacy entries to migrate`);
+
+    for (const entry of legacyEntries) {
+      // Set default values for missing fields
+      if (!entry.notes && entry.remarks) {
+        entry.notes = entry.remarks;
+      }
+      
+      if (!entry.notes) {
+        entry.notes = '';
+      }
+
+      if (!entry.mood) {
+        entry.mood = 'good';
+      }
+
+      if (!entry.energyLevel) {
+        entry.energyLevel = 3;
+      }
+
+      if (!entry.challenges) {
+        entry.challenges = [];
+      }
+
+      if (!entry.achievements) {
+        entry.achievements = [];
+      }
+
+      if (!entry.targetVideos) {
+        entry.targetVideos = 15;
+      }
+
+      // Recalculate productivity score
+      if (entry.videosCompleted && entry.targetVideos) {
+        entry.productivityScore = Math.round((entry.videosCompleted / entry.targetVideos) * 100);
+        if (entry.productivityScore > 100) {
+          entry.productivityScore = 100;
+        }
+      }
+
+      await entry.save();
+    }
+
+    console.log(`Successfully migrated ${legacyEntries.length} legacy entries`);
+    return legacyEntries.length;
+  } catch (error) {
+    console.error('Error migrating legacy entries:', error);
+    throw error;
+  }
 };
 
 // Static method to get user's daily stats
