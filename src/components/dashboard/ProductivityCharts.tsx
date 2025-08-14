@@ -25,7 +25,6 @@ interface ChartData {
   date: string;
   videosCompleted: number;
   productivityScore: number;
-  totalHours: number;
   category: string;
 }
 
@@ -37,7 +36,7 @@ type TimelinePeriod = 'this-week' | 'last-3-weeks' | 'last-month' | 'last-3-mont
 
 const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar' | 'pie'>('line');
-  const [activeMetric, setActiveMetric] = useState<'videos' | 'productivity' | 'hours'>('videos');
+  const [activeMetric, setActiveMetric] = useState<'videos' | 'productivity'>('videos');
   const [period, setPeriod] = useState<TimelinePeriod>('this-week');
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -197,7 +196,6 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
         productivityScore: weekEntries.length > 0 
           ? Math.round(weekEntries.reduce((sum, entry) => sum + (entry.productivityScore || 0), 0) / weekEntries.length)
           : 0,
-        totalHours: weekEntries.reduce((sum, entry) => sum + (entry.totalHours || 0), 0),
         category: 'week'
       };
       
@@ -229,7 +227,6 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
       date: formatDateLabel(new Date(entry.date), period),
       videosCompleted: entry.videosCompleted || 0,
       productivityScore: entry.productivityScore || 0,
-      totalHours: entry.totalHours || 0,
       category: entry.videoCategory || 'course'
     }));
   };
@@ -275,8 +272,6 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
         return chartData.map(item => ({ date: item.date, value: item.videosCompleted }));
       case 'productivity':
         return chartData.map(item => ({ date: item.date, value: item.productivityScore }));
-      case 'hours':
-        return chartData.map(item => ({ date: item.date, value: item.totalHours }));
       default:
         return chartData.map(item => ({ date: item.date, value: item.videosCompleted }));
     }
@@ -286,7 +281,6 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
     switch (activeMetric) {
       case 'videos': return 'Videos Completed';
       case 'productivity': return 'Productivity Score (%)';
-      case 'hours': return 'Total Hours';
       default: return 'Videos Completed';
     }
   };
@@ -477,7 +471,6 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
             >
               <option value="videos">Videos Completed</option>
               <option value="productivity">Productivity Score</option>
-              <option value="hours">Total Hours</option>
             </select>
           </div>
 
@@ -536,21 +529,21 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
           <span className="summary-label">Total {getMetricLabel()}:</span>
           <span className="summary-value">
             {getMetricData().reduce((sum, item) => sum + item.value, 0)}
-            {activeMetric === 'productivity' ? '%' : activeMetric === 'hours' ? 'h' : ''}
+            {activeMetric === 'productivity' ? '%' : ''}
           </span>
         </div>
         <div className="summary-item">
           <span className="summary-label">Average:</span>
           <span className="summary-value">
             {(getMetricData().reduce((sum, item) => sum + item.value, 0) / getMetricData().length).toFixed(1)}
-            {activeMetric === 'productivity' ? '%' : activeMetric === 'hours' ? 'h' : ''}
+            {activeMetric === 'productivity' ? '%' : ''}
           </span>
         </div>
         <div className="summary-item">
           <span className="summary-label">Best Day:</span>
           <span className="summary-value">
             {getMetricData().reduce((max, item) => item.value > max.value ? item : max).value}
-            {activeMetric === 'productivity' ? '%' : activeMetric === 'hours' ? 'h' : ''}
+            {activeMetric === 'productivity' ? '%' : ''}
           </span>
         </div>
         <div className="summary-item">

@@ -17,7 +17,6 @@ interface TeamMember {
 interface TeamStats {
   totalMembers: number;
   totalVideos: number;
-  totalHours: number;
   averageProductivity: number;
   weeklyProgress: number;
   monthlyProgress: number;
@@ -103,7 +102,6 @@ export default function ManagerDashboard() {
   const [teamStats, setTeamStats] = useState<TeamStats>({
     totalMembers: 0,
     totalVideos: 0,
-    totalHours: 0,
     averageProductivity: 0,
     weeklyProgress: 0,
     monthlyProgress: 0
@@ -341,14 +339,6 @@ export default function ManagerDashboard() {
               </div>
               <div className="stat-value">{teamStats.totalVideos || 0}</div>
               <div className="stat-label">Total Videos</div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon">
-                <Clock className="w-6 h-6" />
-              </div>
-              <div className="stat-value">{(teamStats.totalHours || 0).toFixed(1)}h</div>
-              <div className="stat-label">Total Hours</div>
             </div>
 
             <div className="stat-card">

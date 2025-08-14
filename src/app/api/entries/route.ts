@@ -109,8 +109,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       date,
-      shiftStart,
-      shiftEnd,
       videosCompleted,
       targetVideos,
       notes,
@@ -121,9 +119,9 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validation
-    if (!date || !shiftStart || !shiftEnd || videosCompleted === undefined) {
+    if (!date || videosCompleted === undefined) {
       return NextResponse.json(
-        { error: 'Date, shift start, shift end, and videos completed are required' },
+        { error: 'Date and videos completed are required' },
         { status: 400 }
       );
     }
@@ -159,8 +157,6 @@ export async function POST(request: NextRequest) {
     const entry = new Entry({
       userId: decoded.userId,
       date: new Date(date),
-      shiftStart: new Date(shiftStart),
-      shiftEnd: new Date(shiftEnd),
       videosCompleted,
       targetVideos: targetVideos || 15,
       notes: notes || '',

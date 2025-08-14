@@ -23,8 +23,6 @@ import ProductivityCharts from './ProductivityCharts';
 interface Entry {
   _id: string;
   date: string;
-  shiftStart: string;
-  shiftEnd: string;
   videosCompleted: number;
   targetVideos: number;
   productivityScore: number;
@@ -32,14 +30,12 @@ interface Entry {
   energyLevel: string;
   challenges: string;
   achievements: string;
-  totalHours: number;
-  notes: string; // Added notes to the interface
+  notes: string;
 }
 
 interface DashboardStats {
   totalEntries: number;
   totalVideos: number;
-  totalHours: number;
   averageProductivity: number;
   averageMood: number;
   averageEnergy: number;
@@ -54,7 +50,6 @@ export default function EditorDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalEntries: 0,
     totalVideos: 0,
-    totalHours: 0,
     averageProductivity: 0,
     averageMood: 0,
     averageEnergy: 0,
@@ -125,7 +120,6 @@ export default function EditorDashboard() {
         setStats({
           totalEntries: statsData.userStats?.entriesCount || 0,
           totalVideos: statsData.userStats?.totalVideos || 0,
-          totalHours: statsData.userStats?.totalHours || 0,
           averageProductivity: statsData.userStats?.averageProductivity || 0,
           averageMood: 0, // Not provided by API yet
           averageEnergy: 0, // Not provided by API yet
@@ -139,7 +133,6 @@ export default function EditorDashboard() {
       setStats({
         totalEntries: 0,
         totalVideos: 0,
-        totalHours: 0,
         averageProductivity: 0,
         averageMood: 0,
         averageEnergy: 0,
@@ -230,14 +223,8 @@ export default function EditorDashboard() {
         targetVideos = -3; // Leave deducts 3 videos
       }
       
-      // Use default shift times (full day)
-      const shiftStart = new Date(`${formData.date}T00:00:00Z`);
-      const shiftEnd = new Date(`${formData.date}T23:59:59Z`);
-      
       const entryData = {
         date: formData.date,
-        shiftStart: shiftStart.toISOString(),
-        shiftEnd: shiftEnd.toISOString(),
         videosCompleted: parseFloat(formData.videosCompleted),
         videoCategory: formData.videoCategory,
         targetVideos: targetVideos,
@@ -246,7 +233,6 @@ export default function EditorDashboard() {
         energyLevel: 4,
         challenges: [],
         achievements: [],
-        totalHours: formData.videoCategory === 'leave' ? 0 : 8,
         notes: formData.remarks // Changed from remarks to notes
       };
 
@@ -631,12 +617,6 @@ export default function EditorDashboard() {
               </div>
               
               <div className="stat-card">
-                <div className="stat-title">Total Hours</div>
-                <div className="stat-value">{(stats.totalHours || 0).toFixed(1)}h</div>
-                <div className="stat-change positive">+{(stats.totalHours || 0).toFixed(1)}h this week</div>
-              </div>
-              
-              <div className="stat-card">
                 <div className="stat-title">Avg Productivity</div>
                 <div className="stat-value">{(stats.averageProductivity || 0).toFixed(1)}%</div>
                 <div className="stat-change positive">+{(stats.averageProductivity || 0).toFixed(1)}% this week</div>
@@ -677,9 +657,6 @@ export default function EditorDashboard() {
                           Productivity
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                          Hours
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                           Mood
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
@@ -696,12 +673,6 @@ export default function EditorDashboard() {
                           <td className="px-4 py-3 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">{formatDate(entry.date)}</div>
-                              <div className="text-xs text-gray-500">
-                                {entry.shiftStart && entry.shiftEnd ? 
-                                  `${new Date(entry.shiftStart).toLocaleTimeString()} - ${new Date(entry.shiftEnd).toLocaleTimeString()}` : 
-                                  'Time not specified'
-                                }
-                              </div>
                             </div>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
@@ -715,9 +686,6 @@ export default function EditorDashboard() {
                             }`}>
                               {entry.productivityScore || 0}%
                             </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {entry.totalHours || 0}h
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             <div className="flex items-center space-x-1">

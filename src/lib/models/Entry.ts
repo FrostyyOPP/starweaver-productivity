@@ -3,9 +3,6 @@ import mongoose from 'mongoose';
 export interface IEntry extends mongoose.Document {
   userId: mongoose.Types.ObjectId;
   date: Date;
-  shiftStart: Date;
-  shiftEnd: Date;
-  totalHours: number;
   videosCompleted: number;
   targetVideos: number;
   productivityScore: number;
@@ -28,20 +25,6 @@ const entrySchema = new mongoose.Schema<IEntry>({
   date: {
     type: Date,
     required: [true, 'Date is required']
-  },
-  shiftStart: {
-    type: Date,
-    required: [true, 'Shift start time is required']
-  },
-  shiftEnd: {
-    type: Date,
-    required: [true, 'Shift end time is required']
-  },
-  totalHours: {
-    type: Number,
-    required: false,
-    min: [0, 'Total hours cannot be negative'],
-    max: [24, 'Total hours cannot exceed 24']
   },
   videosCompleted: {
     type: Number,
@@ -105,26 +88,6 @@ entrySchema.pre('save', function(next) {
   next();
 });
 
-// Calculate total hours before saving
-entrySchema.pre('save', function(next) {
-  if (this.isModified('shiftStart') || this.isModified('shiftEnd')) {
-    const start = new Date(this.shiftStart);
-    const end = new Date(this.shiftEnd);
-    const diffMs = end.getTime() - start.getTime();
-    this.totalHours = Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100; // Round to 2 decimal places
-  }
-  
-  // Set default totalHours if not calculated
-  if (!this.totalHours && this.shiftStart && this.shiftEnd) {
-    const start = new Date(this.shiftStart);
-    const end = new Date(this.shiftEnd);
-    const diffMs = end.getTime() - start.getTime();
-    this.totalHours = Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100;
-  }
-  
-  next();
-});
-
 // Create compound indexes for efficient queries
 entrySchema.index({ userId: 1, date: 1 }, { unique: true }); // One entry per user per day
 entrySchema.index({ userId: 1, date: -1 }); // User entries sorted by date
@@ -134,11 +97,6 @@ entrySchema.index({ productivityScore: -1 }); // Entries sorted by productivity
 // Virtual for completion percentage
 entrySchema.virtual('completionPercentage').get(function() {
   return Math.round((this.videosCompleted / this.targetVideos) * 100);
-});
-
-// Virtual for shift duration in hours
-entrySchema.virtual('shiftDuration').get(function() {
-  return this.totalHours;
 });
 
 // Method to mark entry as completed

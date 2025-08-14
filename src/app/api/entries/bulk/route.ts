@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
           energyLevel: entryData.energyLevel || 'medium',
           challenges: entryData.challenges || [],
           achievements: entryData.achievements || [],
-          totalHours: entryData.totalHours || 8,
           remarks: entryData.notes || entryData.remarks || ''
         });
 

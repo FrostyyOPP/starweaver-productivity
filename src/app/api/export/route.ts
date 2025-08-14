@@ -62,27 +62,24 @@ export async function GET(request: NextRequest) {
         totalEntries: entries.length,
         format
       },
-      entries: entries.map(entry => ({
-        date: entry.date,
-        shiftStart: entry.shiftStart,
-        shiftEnd: entry.shiftEnd,
-        totalHours: entry.totalHours,
-        videosCompleted: entry.videosCompleted,
-        targetVideos: entry.targetVideos,
-        productivityScore: entry.productivityScore,
-        notes: entry.notes,
-        mood: entry.mood,
-        energyLevel: entry.energyLevel,
-        challenges: entry.challenges,
-        achievements: entry.achievements,
-        isCompleted: entry.isCompleted
-      }))
+      entries: entries.map(entry => {
+        const entryData = {
+          date: entry.date,
+          videosCompleted: entry.videosCompleted,
+          productivityScore: entry.productivityScore,
+          mood: entry.mood,
+          energyLevel: entry.energyLevel,
+          challenges: entry.challenges,
+          achievements: entry.achievements,
+          notes: entry.notes
+        };
+        return entryData;
+      })
     };
 
     // Add analytics if requested
     if (includeAnalytics) {
       const totalVideos = entries.reduce((sum, entry) => sum + entry.videosCompleted, 0);
-      const totalHours = entries.reduce((sum, entry) => sum + entry.totalHours, 0);
       const averageProductivity = entries.length > 0 
         ? Math.round(entries.reduce((sum, entry) => sum + entry.productivityScore, 0) / entries.length)
         : 0;
@@ -90,10 +87,8 @@ export async function GET(request: NextRequest) {
       exportData.analytics = {
         summary: {
           totalVideos,
-          totalHours,
           averageProductivity,
           averageVideosPerDay: Math.round(totalVideos / entries.length * 100) / 100,
-          averageHoursPerDay: Math.round(totalHours / entries.length * 100) / 100
         },
         trends: {
           bestDay: entries.reduce((best, entry) => 
@@ -158,34 +153,24 @@ async function getMostProductiveHour(entries: any[]): Promise<number> {
 function generateCSV(data: any): NextResponse {
   const csvHeaders = [
     'Date',
-    'Shift Start',
-    'Shift End',
-    'Total Hours',
     'Videos Completed',
-    'Target Videos',
     'Productivity Score',
-    'Notes',
     'Mood',
     'Energy Level',
     'Challenges',
     'Achievements',
-    'Completed'
+    'Notes'
   ];
 
   const csvRows = data.entries.map((entry: any) => [
     new Date(entry.date).toLocaleDateString(),
-    new Date(entry.shiftStart).toLocaleTimeString(),
-    new Date(entry.shiftEnd).toLocaleTimeString(),
-    entry.totalHours,
     entry.videosCompleted,
-    entry.targetVideos,
     entry.productivityScore,
-    `"${entry.notes}"`,
     entry.mood,
     entry.energyLevel,
     `"${entry.challenges.join('; ')}"`,
     `"${entry.achievements.join('; ')}"`,
-    entry.isCompleted ? 'Yes' : 'No'
+    `"${entry.notes}"`
   ]);
 
   const csvContent = [csvHeaders, ...csvRows]
@@ -203,34 +188,24 @@ function generateCSV(data: any): NextResponse {
 function generateExcel(data: any): NextResponse {
   const csvHeaders = [
     'Date',
-    'Shift Start',
-    'Shift End',
-    'Total Hours',
     'Videos Completed',
-    'Target Videos',
     'Productivity Score',
-    'Notes',
     'Mood',
     'Energy Level',
     'Challenges',
     'Achievements',
-    'Completed'
+    'Notes'
   ];
 
   const csvRows = data.entries.map((entry: any) => [
     new Date(entry.date).toLocaleDateString(),
-    new Date(entry.shiftStart).toLocaleTimeString(),
-    new Date(entry.shiftEnd).toLocaleTimeString(),
-    entry.totalHours,
     entry.videosCompleted,
-    entry.targetVideos,
     entry.productivityScore,
-    entry.notes,
     entry.mood,
     entry.energyLevel,
     entry.challenges.join('; '),
     entry.achievements.join('; '),
-    entry.isCompleted ? 'Yes' : 'No'
+    entry.notes
   ]);
 
   const csvContent = [csvHeaders, ...csvRows]

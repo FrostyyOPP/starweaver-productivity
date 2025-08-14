@@ -66,18 +66,24 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Calculate basic metrics
-    const totalVideos = userEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0);
-    const totalHours = userEntries.reduce((sum, entry) => sum + entry.totalHours, 0);
-    const averageProductivity = Math.round(
-      userEntries.reduce((sum, entry) => sum + entry.productivityScore, 0) / userEntries.length
-    );
-    const averageVideosPerDay = Math.round(totalVideos / userEntries.length * 100) / 100;
-    const averageHoursPerDay = Math.round(totalHours / userEntries.length * 100) / 100;
+    // Calculate user stats
+    const userStats = {
+      totalEntries: userEntries.length,
+      totalVideos: userEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0),
+      averageProductivity: userEntries.length > 0 
+        ? Math.round(userEntries.reduce((sum, entry) => sum + entry.productivityScore, 0) / userEntries.length)
+        : 0,
+      averageMood: userEntries.length > 0 
+        ? Math.round(userEntries.reduce((sum, entry) => sum + (entry.mood === 'excellent' ? 4 : entry.mood === 'good' ? 3 : entry.mood === 'average' ? 2 : 1), 0) / userEntries.length)
+        : 0,
+      averageEnergy: userEntries.length > 0 
+        ? Math.round(userEntries.reduce((sum, entry) => sum + entry.energyLevel, 0) / userEntries.length)
+        : 0
+    };
 
     // Calculate target achievement
     const totalTarget = userEntries.reduce((sum, entry) => sum + entry.targetVideos, 0);
-    const targetAchievement = Math.round((totalVideos / totalTarget) * 100);
+    const targetAchievement = Math.round((userStats.totalVideos / totalTarget) * 100);
 
     // Calculate consistency score
     const consistencyScore = Math.round(
@@ -100,7 +106,6 @@ export async function GET(request: NextRequest) {
               $dateToString: { format: "%Y-%m-%d", date: "$date" }
             },
             dailyVideos: { $sum: "$videosCompleted" },
-            dailyHours: { $sum: "$totalHours" },
             averageProductivity: { $avg: "$productivityScore" },
             mood: { $push: "$mood" },
             energyLevel: { $push: "$energyLevel" }
@@ -173,7 +178,7 @@ export async function GET(request: NextRequest) {
     if (previousEntries.length > 0) {
       const previousProductivity = previousEntries.reduce((sum, entry) => sum + entry.productivityScore, 0) / previousEntries.length;
       improvementRate = Math.round(
-        ((averageProductivity - previousProductivity) / previousProductivity) * 100
+        ((userStats.averageProductivity - previousProductivity) / previousProductivity) * 100
       );
     }
 
@@ -199,11 +204,7 @@ export async function GET(request: NextRequest) {
     // Prepare analytics response
     const analytics = {
       summary: {
-        totalVideos,
-        totalHours,
-        averageProductivity,
-        averageVideosPerDay,
-        averageHoursPerDay,
+        ...userStats,
         targetAchievement,
         consistencyScore,
         improvementRate

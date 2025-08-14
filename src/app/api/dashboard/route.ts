@@ -56,21 +56,19 @@ export async function GET(request: NextRequest) {
       date: { $gte: startDate, $lte: endDate }
     }).sort({ date: 1 });
 
-    // Calculate user statistics
+    // Calculate user stats
     const userStats = {
+      entriesCount: userEntries.length,
       totalVideos: userEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0),
-      totalHours: userEntries.reduce((sum, entry) => sum + entry.totalHours, 0),
       averageProductivity: userEntries.length > 0 
         ? Math.round(userEntries.reduce((sum, entry) => sum + entry.productivityScore, 0) / userEntries.length)
         : 0,
-      targetAchievement: userEntries.length > 0
-        ? Math.round(userEntries.reduce((sum, entry) => sum + (entry.videosCompleted / entry.targetVideos * 100), 0) / userEntries.length)
+      weeklyProgress: userEntries.length > 0 
+        ? Math.round(userEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0) / userEntries.length)
         : 0,
-      consistencyScore: userEntries.length > 0
-        ? Math.round(userEntries.filter(entry => entry.productivityScore >= 80).length / userEntries.length * 100)
-        : 0,
-      entriesCount: userEntries.length,
-      completedEntries: userEntries.filter(entry => entry.isCompleted).length
+      monthlyProgress: userEntries.length > 0 
+        ? Math.round(userEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0) / userEntries.length)
+        : 0
     };
 
     // Get recent entries (last 5)
@@ -95,7 +93,6 @@ export async function GET(request: NextRequest) {
             $dateToString: { format: "%Y-%m-%d", date: "$date" }
           },
           dailyVideos: { $sum: "$videosCompleted" },
-          dailyHours: { $sum: "$totalHours" },
           averageProductivity: { $avg: "$productivityScore" }
         }
       },
@@ -151,7 +148,6 @@ export async function GET(request: NextRequest) {
       teamStats = {
         totalMembers: teamMembers.length,
         totalVideos: teamEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0),
-        totalHours: teamEntries.reduce((sum, entry) => sum + entry.totalHours, 0),
         averageProductivity: teamEntries.length > 0
           ? Math.round(teamEntries.reduce((sum, entry) => sum + entry.productivityScore, 0) / teamEntries.length)
           : 0,
@@ -166,7 +162,6 @@ export async function GET(request: NextRequest) {
             $group: {
               _id: "$userId",
               totalVideos: { $sum: "$videosCompleted" },
-              totalHours: { $sum: "$totalHours" },
               averageProductivity: { $avg: "$productivityScore" }
             }
           },
@@ -192,7 +187,6 @@ export async function GET(request: NextRequest) {
               name: "$user.name",
               email: "$user.email",
               totalVideos: 1,
-              totalHours: 1,
               averageProductivity: 1
             }
           }

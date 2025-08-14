@@ -62,14 +62,11 @@ const ExportButton: React.FC<ExportButtonProps> = ({ entries, period, chartRef }
         'Videos Completed': entry.videosCompleted || 0,
         'Video Category': entry.videoCategory || 'course',
         'Productivity Score (%)': entry.productivityScore || 0,
-        'Total Hours': entry.totalHours || 0,
         'Mood': entry.mood || 'N/A',
         'Energy Level': entry.energyLevel || 0,
         'Challenges': Array.isArray(entry.challenges) ? entry.challenges.join(', ') : 'N/A',
         'Achievements': Array.isArray(entry.achievements) ? entry.achievements.join(', ') : 'N/A',
-        'Remarks': entry.remarks || 'N/A',
-        'Shift Start': entry.shiftStart ? new Date(entry.shiftStart).toLocaleTimeString() : 'N/A',
-        'Shift End': entry.shiftEnd ? new Date(entry.shiftEnd).toLocaleTimeString() : 'N/A'
+        'Remarks': entry.notes || 'N/A'
       }));
   };
 

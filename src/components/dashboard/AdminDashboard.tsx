@@ -18,8 +18,6 @@ interface TeamMember {
 interface Entry {
   _id: string;
   date: string;
-  shiftStart: string;
-  shiftEnd: string;
   videosCompleted: number;
   targetVideos: number;
   productivityScore: number;
@@ -27,7 +25,6 @@ interface Entry {
   energyLevel: string;
   challenges: string;
   achievements: string;
-  totalHours: number;
   userId: string;
   userName: string;
 }
@@ -36,7 +33,6 @@ interface DashboardStats {
   totalUsers: number;
   totalEntries: number;
   totalVideos: number;
-  totalHours: number;
   averageProductivity: number;
   weeklyProgress: number;
   monthlyProgress: number;
@@ -124,7 +120,6 @@ export default function AdminDashboard() {
     totalUsers: 0,
     totalEntries: 0,
     totalVideos: 0,
-    totalHours: 0,
     averageProductivity: 0,
     weeklyProgress: 0,
     monthlyProgress: 0
@@ -572,9 +567,6 @@ export default function AdminDashboard() {
                           <div>
                             <h4 className="font-semibold text-gray-900">{entry.userName}</h4>
                             <p className="text-sm text-gray-600">{formatDate(entry.date)}</p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(entry.shiftStart).toLocaleTimeString()} - {new Date(entry.shiftEnd).toLocaleTimeString()}
-                            </p>
                           </div>
                           <div className="text-right">
                             <div className="text-lg font-bold text-blue-600">{entry.videosCompleted}</div>
@@ -586,10 +578,6 @@ export default function AdminDashboard() {
                           <div>
                             <span className="text-gray-600">Productivity:</span>
                             <span className="ml-2 font-medium text-green-600">{entry.productivityScore}%</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Hours:</span>
-                            <span className="ml-2 font-medium">{entry.totalHours}h</span>
                           </div>
                           <div>
                             <span className="text-gray-600">Mood:</span>
