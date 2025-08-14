@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, Users, CheckCircle, AlertCircle, X, User, Database } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 interface UserImportData {
   users: Array<{
@@ -78,9 +79,26 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
       const text = await file.text();
       return JSON.parse(text);
     } else if (['xlsx', 'xls', 'csv'].includes(fileExtension || '')) {
-      // For now, we'll expect JSON format
-      // TODO: Add Excel/CSV parsing with xlsx library
-      throw new Error('Please convert your Excel/CSV to JSON format for now');
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = e.target?.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            // Convert Excel data to expected format
+            const users = convertExcelToUsers(jsonData);
+            resolve({ users });
+          } catch (error) {
+            reject(new Error(`Failed to parse Excel file: ${error}`));
+          }
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsBinaryString(file);
+      });
     } else {
       throw new Error('Unsupported file format. Please use JSON, Excel, or CSV.');
     }
@@ -93,9 +111,26 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
       const text = await file.text();
       return JSON.parse(text);
     } else if (['xlsx', 'xls', 'csv'].includes(fileExtension || '')) {
-      // For now, we'll expect JSON format
-      // TODO: Add Excel/CSV parsing with xlsx library
-      throw new Error('Please convert your Excel/CSV to JSON format for now');
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = e.target?.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            // Convert Excel data to expected format
+            const productivityData = convertExcelToProductivityData(jsonData);
+            resolve({ productivityData });
+          } catch (error) {
+            reject(new Error(`Failed to parse Excel file: ${error}`));
+          }
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsBinaryString(file);
+      });
     } else {
       throw new Error('Unsupported file format. Please use JSON, Excel, or CSV.');
     }
@@ -157,6 +192,75 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
     }
 
     return { isValid: errors.length === 0, errors };
+  };
+
+  // Convert Excel data to users format
+  const convertExcelToUsers = (excelData: any[]): any[] => {
+    if (excelData.length < 2) {
+      throw new Error('Excel file must have at least a header row and one data row');
+    }
+
+    const headers = excelData[0];
+    const dataRows = excelData.slice(1);
+
+    // Find column indices
+    const nameIndex = headers.findIndex((h: string) => 
+      h?.toString().toLowerCase().includes('name'));
+    const emailIndex = headers.findIndex((h: string) => 
+      h?.toString().toLowerCase().includes('email'));
+    const passwordIndex = headers.findIndex((h: string) => 
+      h?.toString().toLowerCase().includes('password'));
+    const roleIndex = headers.findIndex((h: string) => 
+      h?.toString().toLowerCase().includes('role'));
+
+    if (nameIndex === -1 || emailIndex === -1 || passwordIndex === -1 || roleIndex === -1) {
+      throw new Error('Excel file must have columns: Name, Email, Password, Role');
+    }
+
+    return dataRows
+      .filter((row: any[]) => row.some(cell => cell !== null && cell !== undefined))
+      .map((row: any[], index: number) => ({
+        name: row[nameIndex]?.toString() || '',
+        email: row[emailIndex]?.toString() || '',
+        password: row[passwordIndex]?.toString() || '',
+        role: row[roleIndex]?.toString()?.toLowerCase() || 'editor'
+      }));
+  };
+
+  // Convert Excel data to productivity data format
+  const convertExcelToProductivityData = (excelData: any[]): any[] => {
+    if (excelData.length < 2) {
+      throw new Error('Excel file must have at least a header row and one data row');
+    }
+
+    const headers = excelData[0];
+    const dataRows = excelData.slice(1);
+
+    // Find column indices
+    const userEmailIndex = headers.findIndex((h: string) => 
+      h?.toString().toLowerCase().includes('email') || h?.toString().toLowerCase().includes('user'));
+    const dateIndex = headers.findIndex((h: string) => 
+      h?.toString().toLowerCase().includes('date'));
+    const videosIndex = headers.findIndex((h: string) => 
+      h?.toString().toLowerCase().includes('video') || h?.toString().toLowerCase().includes('number'));
+    const categoryIndex = headers.findIndex((h: string) => 
+      h?.toString().toLowerCase().includes('category') || h?.toString().toLowerCase().includes('type'));
+    const notesIndex = headers.findIndex((h: string) => 
+      h?.toString().toLowerCase().includes('note') || h?.toString().toLowerCase().includes('remark'));
+
+    if (userEmailIndex === -1 || dateIndex === -1 || videosIndex === -1) {
+      throw new Error('Excel file must have columns: User Email, Date, Videos Completed');
+    }
+
+    return dataRows
+      .filter((row: any[]) => row.some(cell => cell !== null && cell !== undefined))
+      .map((row: any[], index: number) => ({
+        userEmail: row[userEmailIndex]?.toString() || '',
+        date: row[dateIndex]?.toString() || '',
+        videosCompleted: Number(row[videosIndex]) || 0,
+        videoCategory: categoryIndex !== -1 ? row[categoryIndex]?.toString() || 'Course Video' : 'Course Video',
+        notes: notesIndex !== -1 ? row[notesIndex]?.toString() || '' : ''
+      }));
   };
 
   const handleImport = async () => {
@@ -300,18 +404,20 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
                   {/* File Format Instructions */}
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="font-medium text-gray-900 mb-2">Expected Data Format:</h4>
-                    {importType === 'user' ? (
-                      <div className="text-sm text-gray-600 space-y-1">
-                        <p>• <strong>users:</strong> Array of users with name, email, password, role</p>
-                        <p>• <strong>role:</strong> Must be admin, manager, editor, or viewer</p>
-                        <p>• <strong>password:</strong> Minimum 8 characters</p>
-                      </div>
+                                         {importType === 'user' ? (
+                       <div className="text-sm text-gray-600 space-y-1">
+                         <p>• <strong>users:</strong> Array of users with name, email, password, role</p>
+                         <p>• <strong>role:</strong> Must be admin, manager, editor, or viewer</p>
+                         <p>• <strong>password:</strong> Minimum 8 characters</p>
+                         <p>• <strong>Excel Support:</strong> Upload Excel files with columns: Name, Email, Password, Role</p>
+                       </div>
                                          ) : (
                        <div className="text-sm text-gray-600 space-y-1">
                          <p>• <strong>productivityData:</strong> Array of entries with userEmail, date, videosCompleted, videoCategory, notes</p>
                          <p>• <strong>userEmail:</strong> Must match existing user email</p>
                          <p>• <strong>date:</strong> Format: YYYY-MM-DD</p>
                          <p>• <strong>videoCategory:</strong> Optional - Course Video, Marketing Video, or Leave (defaults to Course Video)</p>
+                         <p>• <strong>Excel Support:</strong> Upload Excel files with columns: User Email, Date, Videos Completed, Category, Notes</p>
                        </div>
                      )}
                   </div>
