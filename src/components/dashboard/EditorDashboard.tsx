@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { 
@@ -18,6 +18,7 @@ import {
   AlertCircle,
   X
 } from 'lucide-react';
+import ProductivityCharts from './ProductivityCharts';
 
 interface Entry {
   _id: string;
@@ -649,38 +650,39 @@ export default function EditorDashboard() {
           
           {/* Stats Grid */}
           <div className="dashboard-section">
-            <div className="dashboard-grid">
+            <div className="stats-grid">
               <div className="stat-card">
-                <div className="stat-icon">
-                  <BarChart3 className="w-6 h-6" />
-                </div>
+                <div className="stat-title">Total Entries</div>
                 <div className="stat-value">{stats.totalEntries || 0}</div>
-                <div className="stat-label">Total Entries</div>
+                <div className="stat-change positive">+{stats.totalEntries || 0} this week</div>
               </div>
-
+              
               <div className="stat-card">
-                <div className="stat-icon">
-                  <Target className="w-6 h-6" />
-                </div>
+                <div className="stat-title">Videos Completed</div>
                 <div className="stat-value">{stats.totalVideos || 0}</div>
-                <div className="stat-label">Videos Completed</div>
+                <div className="stat-change positive">+{stats.totalVideos || 0} this week</div>
               </div>
-
+              
               <div className="stat-card">
-                <div className="stat-icon">
-                  <Clock className="w-6 h-6" />
-                </div>
+                <div className="stat-title">Total Hours</div>
                 <div className="stat-value">{(stats.totalHours || 0).toFixed(1)}h</div>
-                <div className="stat-label">Total Hours</div>
+                <div className="stat-change positive">+{(stats.totalHours || 0).toFixed(1)}h this week</div>
               </div>
-
+              
               <div className="stat-card">
-                <div className="stat-icon">
-                  <TrendingUp className="w-6 h-6" />
-                </div>
+                <div className="stat-title">Avg Productivity</div>
                 <div className="stat-value">{(stats.averageProductivity || 0).toFixed(1)}%</div>
-                <div className="stat-label">Avg Productivity</div>
+                <div className="stat-change positive">+{(stats.averageProductivity || 0).toFixed(1)}% this week</div>
               </div>
+            </div>
+          </div>
+
+          {/* Productivity Charts */}
+          <div className="dashboard-section">
+            <h3 className="section-title">Productivity Analytics</h3>
+            <div className="charts-container">
+              <ProductivityCharts entries={entries} period="week" />
+              <ProductivityCharts entries={entries} period="month" />
             </div>
           </div>
 

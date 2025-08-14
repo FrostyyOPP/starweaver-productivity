@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Star, TrendingUp, Clock, Target, Award, Calendar, BarChart3, Users, Plus, LogOut, Shield, UserPlus, UserMinus, X } from 'lucide-react';
+import ProductivityCharts from './ProductivityCharts';
 
 interface TeamMember {
   _id: string;
@@ -475,6 +476,15 @@ export default function AdminDashboard() {
                   </div>
                   <div className="stat-value">{(stats.averageProductivity || 0).toFixed(1)}%</div>
                   <div className="stat-label">System Productivity</div>
+                </div>
+              </div>
+
+              {/* Productivity Charts */}
+              <div className="dashboard-section mt-8">
+                <h3 className="section-title">System Analytics</h3>
+                <div className="charts-container">
+                  <ProductivityCharts entries={entries} period="week" />
+                  <ProductivityCharts entries={entries} period="month" />
                 </div>
               </div>
 
