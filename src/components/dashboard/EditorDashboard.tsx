@@ -353,10 +353,10 @@ export default function EditorDashboard() {
 
         {/* Success Notification */}
         {showSuccessNotification && successDetails && (
-          <div className="mb-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl shadow-lg">
+          <div className="mb-6 p-6 bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-400 rounded-xl shadow-lg">
             <div className="flex items-center space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-green-600 text-2xl">🎉</span>
+              <div className="flex-shrink-0 w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
+                <span className="text-green-700 text-2xl">🎉</span>
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-green-800 mb-2">
@@ -374,7 +374,7 @@ export default function EditorDashboard() {
                   setShowSuccessNotification(false);
                   setSuccessDetails(null);
                 }}
-                className="flex-shrink-0 text-green-500 hover:text-green-700 transition-colors"
+                className="flex-shrink-0 text-green-600 hover:text-green-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -434,13 +434,13 @@ export default function EditorDashboard() {
                 {formMessage && (
                   <div className={`mb-4 p-4 rounded-lg border-2 shadow-sm ${
                     formMessage.type === 'success' 
-                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 text-green-800' 
+                      ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-green-400 text-green-800' 
                       : 'bg-red-50 border-red-200 text-red-700'
                   }`}>
                     <div className="flex items-start space-x-3">
                       {formMessage.type === 'success' ? (
-                        <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                          <span className="text-green-600 text-lg">✓</span>
+                        <div className="flex-shrink-0 w-6 h-6 bg-green-200 rounded-full flex items-center justify-center">
+                          <span className="text-green-700 text-lg">✓</span>
                         </div>
                       ) : (
                         <div className="flex-shrink-0 w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
