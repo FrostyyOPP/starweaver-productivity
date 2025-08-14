@@ -32,28 +32,91 @@ interface ProductivityChartsProps {
   entries: any[];
 }
 
+type TimelinePeriod = 'this-week' | 'last-3-weeks' | 'last-month' | 'last-3-months' | 'last-quarter' | 'last-12-months';
+
 const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar' | 'pie'>('line');
   const [activeMetric, setActiveMetric] = useState<'videos' | 'productivity' | 'hours'>('videos');
-  const [period, setPeriod] = useState<'week' | 'month'>('week');
+  const [period, setPeriod] = useState<TimelinePeriod>('this-week');
+
+  // Get date range based on selected period
+  const getDateRange = (selectedPeriod: TimelinePeriod) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    switch (selectedPeriod) {
+      case 'this-week':
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
+        return { start: startOfWeek, end: today };
+      
+      case 'last-3-weeks':
+        const threeWeeksAgo = new Date(today);
+        threeWeeksAgo.setDate(today.getDate() - 21); // 3 weeks ago
+        return { start: threeWeeksAgo, end: today };
+      
+      case 'last-month':
+        const lastMonth = new Date(today);
+        lastMonth.setDate(today.getDate() - 30); // 30 days ago
+        return { start: lastMonth, end: today };
+      
+      case 'last-3-months':
+        const threeMonthsAgo = new Date(today);
+        threeMonthsAgo.setMonth(today.getMonth() - 3); // 3 months ago
+        return { start: threeMonthsAgo, end: today };
+      
+      case 'last-quarter':
+        const lastQuarter = new Date(today);
+        lastQuarter.setMonth(today.getMonth() - 3); // 3 months ago (quarter)
+        return { start: lastQuarter, end: today };
+      
+      case 'last-12-months':
+        const lastYear = new Date(today);
+        lastYear.setFullYear(today.getFullYear() - 1); // 1 year ago
+        return { start: lastYear, end: today };
+      
+      default:
+        return { start: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000), end: today };
+    }
+  };
+
+  // Get period label for display
+  const getPeriodLabel = (selectedPeriod: TimelinePeriod): string => {
+    switch (selectedPeriod) {
+      case 'this-week': return 'This Week';
+      case 'last-3-weeks': return 'Last 3 Weeks';
+      case 'last-month': return 'Last Month';
+      case 'last-3-months': return 'Last 3 Months';
+      case 'last-quarter': return 'Last Quarter';
+      case 'last-12-months': return 'Last 12 Months';
+      default: return 'This Week';
+    }
+  };
+
+  // Get period duration for summary
+  const getPeriodDuration = (selectedPeriod: TimelinePeriod): string => {
+    switch (selectedPeriod) {
+      case 'this-week': return '7 Days';
+      case 'last-3-weeks': return '21 Days';
+      case 'last-month': return '30 Days';
+      case 'last-3-months': return '90 Days';
+      case 'last-quarter': return '90 Days';
+      case 'last-12-months': return '365 Days';
+      default: return '7 Days';
+    }
+  };
 
   // Process data for charts based on selected period
   const processChartData = (): ChartData[] => {
     if (!entries || entries.length === 0) return [];
 
     const sortedEntries = [...entries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const { start, end } = getDateRange(period);
     
     // Filter entries based on period
-    const now = new Date();
     const filteredEntries = sortedEntries.filter(entry => {
       const entryDate = new Date(entry.date);
-      if (period === 'week') {
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        return entryDate >= weekAgo;
-      } else {
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        return entryDate >= monthAgo;
-      }
+      return entryDate >= start && entryDate <= end;
     });
     
     return filteredEntries.map(entry => ({
@@ -72,16 +135,10 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
   const processPieData = () => {
     if (!entries || entries.length === 0) return [];
 
-    const now = new Date();
+    const { start, end } = getDateRange(period);
     const filteredEntries = entries.filter(entry => {
       const entryDate = new Date(entry.date);
-      if (period === 'week') {
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        return entryDate >= weekAgo;
-      } else {
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        return entryDate >= monthAgo;
-      }
+      return entryDate >= start && entryDate <= end;
     });
 
     const categoryCounts = filteredEntries.reduce((acc: any, entry) => {
@@ -285,21 +342,25 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
         <div className="chart-title-section">
           <h3 className="chart-title">Productivity Analytics</h3>
           <p className="chart-subtitle">
-            Track your {period === 'week' ? 'weekly' : 'monthly'} progress
+            {getPeriodLabel(period)} - Track your progress over time
           </p>
         </div>
         
         <div className="chart-controls">
-          {/* Period Selector */}
-          <div className="period-selector">
-            <label className="period-label">Period:</label>
+          {/* Timeline Period Selector */}
+          <div className="timeline-selector">
+            <label className="timeline-label">Timeline:</label>
             <select
               value={period}
-              onChange={(e) => setPeriod(e.target.value as 'week' | 'month')}
-              className="period-select"
+              onChange={(e) => setPeriod(e.target.value as TimelinePeriod)}
+              className="timeline-select"
             >
-              <option value="week">Weekly</option>
-              <option value="month">Monthly</option>
+              <option value="this-week">This Week</option>
+              <option value="last-3-weeks">Last 3 Weeks</option>
+              <option value="last-month">Last Month</option>
+              <option value="last-3-months">Last 3 Months</option>
+              <option value="last-quarter">Last Quarter</option>
+              <option value="last-12-months">Last 12 Months</option>
             </select>
           </div>
 
@@ -383,9 +444,9 @@ const ProductivityCharts: React.FC<ProductivityChartsProps> = ({ entries }) => {
           </span>
         </div>
         <div className="summary-item">
-          <span className="summary-label">Period:</span>
+          <span className="summary-label">Timeline:</span>
           <span className="summary-value">
-            {period === 'week' ? '7 Days' : '30 Days'}
+            {getPeriodDuration(period)}
           </span>
         </div>
       </div>
