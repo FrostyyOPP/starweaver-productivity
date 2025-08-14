@@ -1,10 +1,17 @@
 {
   "hosting": {
-    "public": "out",
+    "public": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "src/**",
+      ".next/**",
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json",
+      "next.config.ts",
+      "*.md"
     ],
     "rewrites": [
       {

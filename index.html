@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Starweaver Productivity App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .feature-section, .status-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-title {
+            margin-bottom: 15px;
+            color: #fbbf24;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+        
+        .feature-list li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+        }
+        
+        .status-text {
+            margin-bottom: 15px;
+        }
+        
+        .code {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+        
+        footer {
+            margin-top: 40px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Starweaver Productivity App</h1>
+        
+        <p class="subtitle">
+            Your productivity tracking application has been successfully deployed!
+        </p>
+        
+        <div class="feature-section">
+            <h2 class="section-title">✨ Features</h2>
+            <ul class="feature-list">
+                <li>📊 Role-based dashboards (Editor, Manager, Admin)</li>
+                <li>🎯 Video productivity tracking</li>
+                <li>📈 Analytics and reporting</li>
+                <li>👥 Team management</li>
+                <li>📤 Data import/export</li>
+            </ul>
+        </div>
+        
+        <div class="status-section">
+            <h2 class="section-title">🔧 Development Status</h2>
+            <p class="status-text">
+                This is a static deployment of the frontend. The full application with backend functionality 
+                requires a running MongoDB server and Node.js backend.
+            </p>
+            <p class="status-text">
+                For full functionality, run the app locally with <span class="code">npm run dev</span>
+            </p>
+        </div>
+        
+        <div class="button-group">
+            <a href="https://github.com/FrostyyOPP/starweaver-productivity" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="btn btn-secondary">
+                📁 View Source Code
+            </a>
+            
+            <button onclick="testDeployment()" class="btn btn-primary">
+                🚀 Test Deployment
+            </button>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Built with Next.js • Deployed on Firebase • Powered by MongoDB</p>
+    </footer>
+    
+    <script>
+        function testDeployment() {
+            alert('🎉 App is successfully deployed to Firebase!');
+        }
+    </script>
+</body>
+</html>
