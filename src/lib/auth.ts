@@ -27,8 +27,8 @@ export interface ApiError {
   details?: string[];
 }
 
-// API base URL
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+// API base URL - using relative URLs since we're on the same domain
+const API_BASE = '';
 
 // Helper function to make API calls
 async function apiCall<T>(
@@ -36,6 +36,8 @@ async function apiCall<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
+  
+  console.log('Making API call to:', url); // Debug log
   
   const defaultOptions: RequestInit = {
     headers: {
@@ -56,14 +58,31 @@ async function apiCall<T>(
     }
   }
 
-  const response = await fetch(url, defaultOptions);
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || 'API request failed');
+  try {
+    console.log('Fetch options:', defaultOptions); // Debug log
+    const response = await fetch(url, defaultOptions);
+    
+    console.log('Response status:', response.status); // Debug log
+    
+    if (!response.ok) {
+      let errorMessage = 'API request failed';
+      try {
+        const data = await response.json();
+        errorMessage = data.error || errorMessage;
+      } catch {
+        // If response is not JSON, use status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+    
+    const data = await response.json();
+    console.log('Response data:', data); // Debug log
+    return data;
+  } catch (error) {
+    console.error('API call failed:', error); // Debug log
+    throw error;
   }
-
-  return data;
 }
 
 // Authentication functions
