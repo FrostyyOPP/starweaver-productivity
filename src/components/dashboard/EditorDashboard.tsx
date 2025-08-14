@@ -33,6 +33,7 @@ interface Entry {
   challenges: string;
   achievements: string;
   totalHours: number;
+  notes: string; // Added notes to the interface
 }
 
 interface DashboardStats {
@@ -75,6 +76,8 @@ export default function EditorDashboard() {
   const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [successDetails, setSuccessDetails] = useState<{ date: string; videos: string; category: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [entriesPerPage] = useState(10);
 
   useEffect(() => {
     if (user) {
@@ -181,6 +184,28 @@ export default function EditorDashboard() {
     return energyMap[energy] || '🔋';
   };
 
+  // Pagination calculations
+  const indexOfLastEntry = currentPage * entriesPerPage;
+  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
+  const currentEntries = entries.slice(indexOfFirstEntry, indexOfLastEntry);
+  const totalPages = Math.ceil(entries.length / entriesPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -222,7 +247,7 @@ export default function EditorDashboard() {
         challenges: [],
         achievements: [],
         totalHours: formData.videoCategory === 'leave' ? 0 : 8,
-        remarks: formData.remarks
+        notes: formData.remarks // Changed from remarks to notes
       };
 
       const token = localStorage.getItem('accessToken');
@@ -629,71 +654,142 @@ export default function EditorDashboard() {
           <div className="dashboard-section recent-entries-section">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Entries</h3>
             <p className="text-gray-600">Your latest productivity entries</p>
-            <div className="card-content">
-              {entries.length === 0 ? (
-                <div className="text-center py-8">
-                  <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No entries yet. Start tracking your productivity!</p>
+            
+            {entries.length === 0 ? (
+              <div className="text-center py-8">
+                <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No entries yet. Start tracking your productivity!</p>
+              </div>
+            ) : (
+              <>
+                {/* Entries Datagrid */}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                          Date
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                          Videos
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                          Productivity
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                          Hours
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                          Mood
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                          Energy
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                          Notes
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {currentEntries.map((entry) => (
+                        <tr key={entry._id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{formatDate(entry.date)}</div>
+                              <div className="text-xs text-gray-500">
+                                {entry.shiftStart && entry.shiftEnd ? 
+                                  `${new Date(entry.shiftStart).toLocaleTimeString()} - ${new Date(entry.shiftEnd).toLocaleTimeString()}` : 
+                                  'Time not specified'
+                                }
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            <span className="font-semibold text-blue-600">{entry.videosCompleted || 0}</span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            <span className={`font-semibold ${
+                              (entry.productivityScore || 0) >= 80 ? 'text-green-600' :
+                              (entry.productivityScore || 0) >= 60 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {entry.productivityScore || 0}%
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {entry.totalHours || 0}h
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            <div className="flex items-center space-x-1">
+                              <span>{getMoodEmoji(entry.mood || 'neutral')}</span>
+                              <span className="capitalize">{entry.mood || 'neutral'}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            <div className="flex items-center space-x-1">
+                              <span>{getEnergyEmoji(entry.energyLevel || 'medium')}</span>
+                              <span className="capitalize">{entry.energyLevel || 'medium'}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-900 max-w-xs">
+                            <div className="truncate" title={entry.notes || 'No notes'}>
+                              {entry.notes || 'No notes'}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {entries.slice(0, 5).map((entry) => (
-                    <div key={entry._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{formatDate(entry.date)}</h4>
-                          <p className="text-sm text-gray-600">
-                            {entry.shiftStart && entry.shiftEnd ? 
-                              `${new Date(entry.shiftStart).toLocaleTimeString()} - ${new Date(entry.shiftEnd).toLocaleTimeString()}` : 
-                              'Time not specified'
-                            }
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-blue-600">{entry.videosCompleted || 0}</div>
-                          <div className="text-sm text-gray-500">videos</div>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-600">Productivity:</span>
-                          <span className="ml-2 font-medium text-green-600">{entry.productivityScore || 0}%</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Hours:</span>
-                          <span className="ml-2 font-medium">{entry.totalHours || 0}h</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Mood:</span>
-                          <span className="ml-2">{getMoodEmoji(entry.mood || 'neutral')} {entry.mood || 'neutral'}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Energy:</span>
-                          <span className="ml-2">{getEnergyEmoji(entry.energyLevel || 'medium')} {entry.energyLevel || 'medium'}</span>
-                        </div>
-                      </div>
-                      
-                      {entry.challenges && entry.challenges.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-100">
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Challenges:</span> {Array.isArray(entry.challenges) ? entry.challenges.join(', ') : entry.challenges}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {entry.achievements && entry.achievements.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Achievements:</span> {Array.isArray(entry.achievements) ? entry.achievements.join(', ') : entry.achievements}
-                          </p>
-                        </div>
-                      )}
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="mt-6 flex items-center justify-between">
+                    <div className="text-sm text-gray-700">
+                      Showing <span className="font-medium">{indexOfFirstEntry + 1}</span> to{' '}
+                      <span className="font-medium">
+                        {Math.min(indexOfLastEntry, entries.length)}
+                      </span> of{' '}
+                      <span className="font-medium">{entries.length}</span> entries
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1}
+                        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Previous
+                      </button>
+                      
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                              currentPage === page
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+                      
+                      <button
+                        onClick={goToNextPage}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
