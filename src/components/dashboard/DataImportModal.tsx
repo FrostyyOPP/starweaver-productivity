@@ -15,6 +15,7 @@ interface DataImportData {
     userEmail: string;
     date: string;
     videosCompleted: number;
+    videoCategory?: 'Course Video' | 'Marketing Video' | 'Leave';
     notes?: string;
   }>;
 }
@@ -148,6 +149,9 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
         }
         if (entry.videosCompleted < 0) {
           errors.push(`Productivity Entry ${index + 1}: Videos completed cannot be negative`);
+        }
+        if (entry.videoCategory && !['Course Video', 'Marketing Video', 'Leave'].includes(entry.videoCategory)) {
+          errors.push(`Productivity Entry ${index + 1}: Invalid video category. Must be 'Course Video', 'Marketing Video', or 'Leave'`);
         }
       });
     }
@@ -302,13 +306,14 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
                         <p>• <strong>role:</strong> Must be admin, manager, editor, or viewer</p>
                         <p>• <strong>password:</strong> Minimum 8 characters</p>
                       </div>
-                    ) : (
-                      <div className="text-sm text-gray-600 space-y-1">
-                        <p>• <strong>productivityData:</strong> Array of entries with userEmail, date, videosCompleted, notes</p>
-                        <p>• <strong>userEmail:</strong> Must match existing user email</p>
-                        <p>• <strong>date:</strong> Format: YYYY-MM-DD</p>
-                      </div>
-                    )}
+                                         ) : (
+                       <div className="text-sm text-gray-600 space-y-1">
+                         <p>• <strong>productivityData:</strong> Array of entries with userEmail, date, videosCompleted, videoCategory, notes</p>
+                         <p>• <strong>userEmail:</strong> Must match existing user email</p>
+                         <p>• <strong>date:</strong> Format: YYYY-MM-DD</p>
+                         <p>• <strong>videoCategory:</strong> Optional - Course Video, Marketing Video, or Leave (defaults to Course Video)</p>
+                       </div>
+                     )}
                   </div>
 
                   {/* Back Button */}
@@ -400,6 +405,7 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
                           <th className="text-left py-2 px-3">User Email</th>
                           <th className="text-left py-2 px-3">Date</th>
                           <th className="text-left py-2 px-3">Videos</th>
+                          <th className="text-left py-2 px-3">Category</th>
                           <th className="text-left py-2 px-3">Notes</th>
                         </tr>
                       </thead>
@@ -409,12 +415,13 @@ const DataImportModal: React.FC<DataImportModalProps> = ({ isOpen, onClose, onUs
                             <td className="py-2 px-3">{entry.userEmail}</td>
                             <td className="py-2 px-3">{entry.date}</td>
                             <td className="py-2 px-3">{entry.videosCompleted}</td>
+                            <td className="py-2 px-3">{entry.videoCategory || 'Course Video'}</td>
                             <td className="py-2 px-3">{entry.notes || '-'}</td>
                           </tr>
                         ))}
                         {dataImportData.productivityData.length > 10 && (
                           <tr>
-                            <td colSpan={4} className="py-2 px-3 text-center text-gray-500">
+                            <td colSpan={5} className="py-2 px-3 text-center text-gray-500">
                               ... and {dataImportData.productivityData.length - 10} more entries
                             </td>
                           </tr>

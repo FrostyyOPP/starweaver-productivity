@@ -44,16 +44,29 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
+        // Validate video category
+        const validCategories = ['Course Video', 'Marketing Video', 'Leave'];
+        if (entry.videoCategory && !validCategories.includes(entry.videoCategory)) {
+          results.errors.push(`Invalid video category for ${entry.userEmail} on ${entry.date}. Must be one of: ${validCategories.join(', ')}`);
+          continue;
+        }
+
         // Calculate productivity score (assuming target is 10 videos per day)
         const targetVideos = 10;
-        const productivityScore = Math.min((entry.videosCompleted / targetVideos) * 100, 100);
+        let productivityScore = 0;
+        
+        if (entry.videoCategory === 'Leave') {
+          productivityScore = 0;
+        } else {
+          productivityScore = Math.min((entry.videosCompleted / targetVideos) * 100, 100);
+        }
 
         // Create entry
         await Entry.create({
           userId: user._id,
           date: new Date(entry.date),
           videosCompleted: entry.videosCompleted,
-          videoCategory: 'Course', // Default category
+          videoCategory: entry.videoCategory || 'Course Video', // Default to Course Video if not specified
           notes: entry.notes || '',
           mood: 5, // Default mood
           energyLevel: 5, // Default energy level

@@ -72,6 +72,7 @@ Your JSON file should contain:
       "userEmail": "aman@gmail.com",
       "date": "2024-01-15",
       "videosCompleted": 8,
+      "videoCategory": "Course Video",
       "notes": "Completed 8 course videos today"
     }
   ]
@@ -82,6 +83,7 @@ Your JSON file should contain:
 - `userEmail`: Email of existing user (must match database)
 - `date`: Date in YYYY-MM-DD format
 - `videosCompleted`: Number of videos completed (0 for leave days)
+- `videoCategory`: Type of video (Course Video, Marketing Video, or Leave)
 - `notes`: Optional notes about the day
 
 ## 🚀 How to Use
@@ -147,7 +149,8 @@ Your JSON file should contain:
 1. **"User not found"**: Verify user emails exist in the database
 2. **"Invalid date format"**: Use YYYY-MM-DD format
 3. **"Negative videos"**: Videos completed cannot be negative
-4. **"Entry already exists"**: Data for that user and date already exists
+4. **"Invalid video category"**: Must be 'Course Video', 'Marketing Video', or 'Leave'
+5. **"Entry already exists"**: Data for that user and date already exists
 
 ### Import Failures
 - Check the error messages in the console

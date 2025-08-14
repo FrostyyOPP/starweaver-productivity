@@ -4,60 +4,70 @@
       "userEmail": "aman@gmail.com",
       "date": "2024-01-15",
       "videosCompleted": 8,
+      "videoCategory": "Course Video",
       "notes": "Completed 8 course videos today"
     },
     {
       "userEmail": "neha@gmail.com",
       "date": "2024-01-15",
       "videosCompleted": 12,
+      "videoCategory": "Marketing Video",
       "notes": "High productivity day with marketing content"
     },
     {
       "userEmail": "vikram@gmail.com",
       "date": "2024-01-15",
       "videosCompleted": 6,
+      "videoCategory": "Course Video",
       "notes": "Working on complex course material"
     },
     {
       "userEmail": "aman@gmail.com",
       "date": "2024-01-16",
       "videosCompleted": 10,
+      "videoCategory": "Course Video",
       "notes": "Better day, met daily target"
     },
     {
       "userEmail": "anjali@gmail.com",
       "date": "2024-01-16",
       "videosCompleted": 0,
+      "videoCategory": "Leave",
       "notes": "On leave today"
     },
     {
       "userEmail": "rohit@gmail.com",
       "date": "2024-01-15",
       "videosCompleted": 9,
+      "videoCategory": "Course Video",
       "notes": "Good progress on video editing"
     },
     {
       "userEmail": "kavya@gmail.com",
       "date": "2024-01-15",
       "videosCompleted": 11,
+      "videoCategory": "Course Video",
       "notes": "Exceeded daily target"
     },
     {
       "userEmail": "sachinkumar@gmail.com",
       "date": "2024-01-15",
       "videosCompleted": 7,
+      "videoCategory": "Course Video",
       "notes": "Team management and video review"
     },
     {
       "userEmail": "priyasharma@gmail.com",
       "date": "2024-01-15",
       "videosCompleted": 6,
+      "videoCategory": "Course Video",
       "notes": "Quality control and team coordination"
     },
     {
       "userEmail": "rahulverma@gmail.com",
       "date": "2024-01-15",
       "videosCompleted": 8,
+      "videoCategory": "Course Video",
       "notes": "Project planning and video production"
     }
   ]
