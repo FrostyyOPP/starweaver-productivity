@@ -319,10 +319,10 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDataImport = async (importData: any) => {
+  const handleUserImport = async (importData: any) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/import', {
+      const response = await fetch('/api/import/users', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -335,16 +335,46 @@ export default function AdminDashboard() {
         const result = await response.json();
         setMessage({ 
           type: 'success', 
-          text: `Import completed successfully! ${result.results.teamLeadersCreated} team leaders, ${result.results.editorsCreated} editors, and ${result.results.entriesCreated} entries created.` 
+          text: `User import completed successfully! ${result.results.usersCreated} users created.` 
         });
         fetchAdminData(); // Refresh data
       } else {
         const error = await response.json();
-        setMessage({ type: 'error', text: `Import failed: ${error.error}` });
+        setMessage({ type: 'error', text: `User import failed: ${error.error}` });
         throw new Error(error.error);
       }
     } catch (error) {
-      setMessage({ type: 'error', text: `Import failed: ${error}` });
+      setMessage({ type: 'error', text: `User import failed: ${error}` });
+      throw error;
+    }
+  };
+
+  const handleDataImport = async (importData: any) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/import/data', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(importData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setMessage({ 
+          type: 'success', 
+          text: `Data import completed successfully! ${result.results.entriesCreated} entries created.` 
+        });
+        fetchAdminData(); // Refresh data
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: `Data import failed: ${error.error}` });
+        throw new Error(error.error);
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: `Data import failed: ${error}` });
       throw error;
     }
   };
@@ -1023,7 +1053,8 @@ export default function AdminDashboard() {
         <DataImportModal
           isOpen={showImportModal}
           onClose={() => setShowImportModal(false)}
-          onImport={handleDataImport}
+          onUserImport={handleUserImport}
+          onDataImport={handleDataImport}
         />
       </div>
     </div>

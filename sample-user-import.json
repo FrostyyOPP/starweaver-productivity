@@ -1,0 +1,58 @@
+{
+  "users": [
+    {
+      "name": "Sachin Kumar",
+      "email": "sachinkumar@gmail.com",
+      "password": "Admin@124",
+      "role": "manager"
+    },
+    {
+      "name": "Priya Sharma",
+      "email": "priyasharma@gmail.com",
+      "password": "Admin@124",
+      "role": "manager"
+    },
+    {
+      "name": "Rahul Verma",
+      "email": "rahulverma@gmail.com",
+      "password": "Admin@124",
+      "role": "manager"
+    },
+    {
+      "name": "Aman Singh",
+      "email": "aman@gmail.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Neha Patel",
+      "email": "neha@gmail.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Vikram Gupta",
+      "email": "vikram@gmail.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Anjali Joshi",
+      "email": "anjali@gmail.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Rohit Malhotra",
+      "email": "rohit@gmail.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Kavya Reddy",
+      "email": "kavya@gmail.com",
+      "password": "Editor@123",
+      "role": "editor"
+    }
+  ]
+}
