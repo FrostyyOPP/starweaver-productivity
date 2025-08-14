@@ -351,7 +351,11 @@ export default function EditorDashboard() {
                 <div className="form-section-header">
                   <h3 className="form-section-title">Add Today's Entry</h3>
                   <button
-                    onClick={() => setShowEntryForm(false)}
+                    onClick={() => {
+                      console.log('Top close button clicked');
+                      setShowEntryForm(false);
+                      resetForm();
+                    }}
                     className="form-close-button"
                   >
                     <X className="w-4 h-4" />
@@ -467,7 +471,11 @@ export default function EditorDashboard() {
                   <div className="flex justify-end space-x-4 pt-4">
                     <button
                       type="button"
-                      onClick={resetForm}
+                      onClick={() => {
+                        console.log('Cancel button clicked');
+                        setShowEntryForm(false);
+                        resetForm();
+                      }}
                       className="btn-enhanced secondary"
                     >
                       Cancel
@@ -488,6 +496,22 @@ export default function EditorDashboard() {
                           <span>Submit Entry</span>
                         </>
                       )}
+                    </button>
+                  </div>
+                  
+                  {/* Bottom Close Button */}
+                  <div className="flex justify-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        console.log('Bottom close button clicked');
+                        setShowEntryForm(false);
+                        resetForm();
+                      }}
+                      className="text-gray-500 hover:text-gray-700 text-sm flex items-center space-x-1 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Close Form</span>
                     </button>
                   </div>
                 </form>
