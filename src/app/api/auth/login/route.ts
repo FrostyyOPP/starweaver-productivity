@@ -23,15 +23,29 @@ export async function POST(request: NextRequest) {
       email: email.toLowerCase().trim() 
     }).select('+password');
 
+    console.log('🔍 Login attempt for email:', email);
+    console.log('🔍 User found:', user ? 'Yes' : 'No');
+    
     if (!user) {
+      console.log('❌ User not found');
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       );
     }
 
+    console.log('🔍 User details:', {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      hasPassword: !!user.password,
+      passwordLength: user.password ? user.password.length : 0
+    });
+
     // Check if user is active
     if (!user.isActive) {
+      console.log('❌ User account deactivated');
       return NextResponse.json(
         { error: 'Account is deactivated. Please contact administrator.' },
         { status: 401 }
@@ -39,8 +53,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
+    console.log('🔍 Attempting password comparison...');
     const isPasswordValid = await user.comparePassword(password);
+    console.log('🔍 Password comparison result:', isPasswordValid);
+    
     if (!isPasswordValid) {
+      console.log('❌ Password validation failed');
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
