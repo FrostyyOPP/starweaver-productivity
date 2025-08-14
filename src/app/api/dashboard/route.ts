@@ -136,8 +136,38 @@ export async function GET(request: NextRequest) {
 
     // Get team data if requested
     let teamStats = null;
+    let systemStats = null;
+    
     if (includeTeam && decoded.role === 'admin') {
-      const teamMembers = await User.find({ role: { $in: ['editor', 'viewer'] } });
+      // Get all users for system stats
+      const allUsers = await User.find({ isActive: true });
+      const allUserIds = allUsers.map(user => user._id);
+      
+      // Get all entries for system stats
+      const allEntries = await Entry.find({
+        userId: { $in: allUserIds },
+        date: { $gte: startDate, $lte: endDate }
+      });
+
+      // Calculate system-wide statistics
+      systemStats = {
+        totalUsers: allUsers.length,
+        totalEntries: allEntries.length,
+        totalVideos: allEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0),
+        averageProductivity: allEntries.length > 0
+          ? Math.round(allEntries.reduce((sum, entry) => sum + entry.productivityScore, 0) / allEntries.length)
+          : 0,
+        usersByRole: await User.aggregate([
+          { $match: { isActive: true } },
+          { $group: { _id: "$role", count: { $sum: 1 } } }
+        ])
+      };
+
+      // Get team members (excluding admin)
+      const teamMembers = await User.find({ 
+        role: { $in: ['editor', 'viewer', 'manager'] },
+        isActive: true 
+      });
       const teamMemberIds = teamMembers.map(member => member._id);
 
       const teamEntries = await Entry.find({
@@ -145,52 +175,59 @@ export async function GET(request: NextRequest) {
         date: { $gte: startDate, $lte: endDate }
       });
 
+      // Get detailed team member performance
+      const teamMemberPerformance = await Entry.aggregate([
+        {
+          $match: {
+            userId: { $in: teamMemberIds.map(id => new mongoose.Types.ObjectId(id)) },
+            date: { $gte: startDate, $lte: endDate }
+          }
+        },
+        {
+          $group: {
+            _id: "$userId",
+            totalVideos: { $sum: "$videosCompleted" },
+            totalEntries: { $sum: 1 },
+            averageProductivity: { $avg: "$productivityScore" },
+            lastEntry: { $max: "$date" }
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "_id",
+            foreignField: "_id",
+            as: "user"
+          }
+        },
+        {
+          $unwind: "$user"
+        },
+        {
+          $project: {
+            _id: 1,
+            name: "$user.name",
+            email: "$user.email",
+            role: "$user.role",
+            totalVideos: 1,
+            totalEntries: 1,
+            averageProductivity: { $round: ["$averageProductivity", 1] },
+            lastEntry: 1
+          }
+        },
+        {
+          $sort: { totalVideos: -1 }
+        }
+      ]);
+
       teamStats = {
         totalMembers: teamMembers.length,
         totalVideos: teamEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0),
         averageProductivity: teamEntries.length > 0
           ? Math.round(teamEntries.reduce((sum, entry) => sum + entry.productivityScore, 0) / teamEntries.length)
           : 0,
-        topPerformers: await Entry.aggregate([
-          {
-            $match: {
-              userId: { $in: teamMemberIds.map(id => new mongoose.Types.ObjectId(id)) },
-              date: { $gte: startDate, $lte: endDate }
-            }
-          },
-          {
-            $group: {
-              _id: "$userId",
-              totalVideos: { $sum: "$videosCompleted" },
-              averageProductivity: { $avg: "$productivityScore" }
-            }
-          },
-          {
-            $sort: { totalVideos: -1 }
-          },
-          {
-            $limit: 5
-          },
-          {
-            $lookup: {
-              from: "users",
-              localField: "_id",
-              foreignField: "_id",
-              as: "user"
-            }
-          },
-          {
-            $unwind: "$user"
-          },
-          {
-            $project: {
-              name: "$user.name",
-              email: "$user.email",
-              totalVideos: 1,
-              averageProductivity: 1
-            }
-          }
-        ])
+        memberPerformance: teamMemberPerformance,
+        topPerformers: teamMemberPerformance.slice(0, 5)
       };
     }
 
@@ -232,7 +269,8 @@ export async function GET(request: NextRequest) {
         mood: moodInsights,
         energy: energyInsights
       },
-      teamStats
+      teamStats,
+      systemStats
     });
 
   } catch (error: any) {
