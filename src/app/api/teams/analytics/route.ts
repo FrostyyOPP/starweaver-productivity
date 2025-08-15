@@ -80,12 +80,99 @@ export async function GET(request: NextRequest) {
       entries.forEach(entry => {
         const dateStr = new Date(entry.date).toISOString().split('T')[0];
         if (dailyData[dateStr] !== undefined) {
-          dailyData[dateStr] += entry.videosCompleted;
+          dailyData[dateStr] += (entry.totalVideos || 0);
         }
       });
 
       chartData = Object.entries(dailyData).map(([date, value]) => ({
         date: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+        value
+      }));
+
+    } else if (period === 'last-week') {
+      // Last week (Monday to Friday)
+      const startOfLastWeek = new Date(now);
+      const dayOfWeek = now.getDay();
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      startOfLastWeek.setDate(now.getDate() - daysToMonday - 7);
+      startOfLastWeek.setHours(0, 0, 0, 0);
+
+      const endOfLastWeek = new Date(startOfLastWeek);
+      endOfLastWeek.setDate(startOfLastWeek.getDate() + 4);
+      endOfLastWeek.setHours(23, 59, 59, 999);
+
+      const query: any = {
+        date: { $gte: startOfLastWeek, $lte: endOfLastWeek }
+      };
+
+      if (team) {
+        query.userId = { $in: team.members };
+      }
+      if (memberId !== 'all') {
+        query.userId = memberId;
+      }
+
+      const entries = await Entry.find(query).populate('userId', 'name');
+      
+      const dailyData: { [key: string]: number } = {};
+      for (let i = 0; i < 5; i++) {
+        const date = new Date(startOfLastWeek);
+        date.setDate(startOfLastWeek.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        dailyData[dateStr] = 0;
+      }
+
+      entries.forEach(entry => {
+        const dateStr = new Date(entry.date).toISOString().split('T')[0];
+        if (dailyData[dateStr] !== undefined) {
+          dailyData[dateStr] += (entry.totalVideos || 0);
+        }
+      });
+
+      chartData = Object.entries(dailyData).map(([date, value]) => ({
+        date: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+        value
+      }));
+
+    } else if (period === 'last-3-weeks') {
+      // Last 3 weeks
+      const startOfPeriod = new Date(now);
+      startOfPeriod.setDate(now.getDate() - 21);
+      startOfPeriod.setHours(0, 0, 0, 0);
+
+      const query: any = {
+        date: { $gte: startOfPeriod }
+      };
+
+      if (team) {
+        query.userId = { $in: team.members };
+      }
+      if (memberId !== 'all') {
+        query.userId = memberId;
+      }
+
+      const entries = await Entry.find(query).populate('userId', 'name');
+      
+      // Group by week
+      const weeklyData: { [key: string]: number } = {};
+      for (let week = 0; week < 3; week++) {
+        const weekStart = new Date(startOfPeriod);
+        weekStart.setDate(startOfPeriod.getDate() + (week * 7));
+        const weekLabel = `Week ${week + 1}`;
+        weeklyData[weekLabel] = 0;
+      }
+
+      entries.forEach(entry => {
+        const entryDate = new Date(entry.date);
+        const weekDiff = Math.floor((entryDate.getTime() - startOfPeriod.getTime()) / (7 * 24 * 60 * 60 * 1000));
+        if (weekDiff >= 0 && weekDiff < 3) {
+          const weekLabel = `Week ${weekDiff + 1}`;
+          weeklyData[weekLabel] += (entry.totalVideos || 0);
+        }
+      });
+
+      chartData = Object.entries(weeklyData).map(([week, value]) => ({
+        date: week,
         value
       }));
 
@@ -117,7 +204,7 @@ export async function GET(request: NextRequest) {
         const entryDate = new Date(entry.date);
         const weekOfMonth = Math.ceil((entryDate.getDate() + startOfMonth.getDay()) / 7);
         if (weekOfMonth >= 1 && weekOfMonth <= 5) {
-          weeklyData[`Week ${weekOfMonth}`] += entry.videosCompleted;
+          weeklyData[`Week ${weekOfMonth}`] += (entry.totalVideos || 0);
         }
       });
 
@@ -158,7 +245,7 @@ export async function GET(request: NextRequest) {
         const entryDate = new Date(entry.date);
         const monthName = entryDate.toLocaleDateString('en-US', { month: 'short' });
         if (monthlyData[monthName] !== undefined) {
-          monthlyData[monthName] += entry.videosCompleted;
+          monthlyData[monthName] += (entry.totalVideos || 0);
         }
       });
 
@@ -197,7 +284,7 @@ export async function GET(request: NextRequest) {
         const entryDate = new Date(entry.date);
         const monthName = entryDate.toLocaleDateString('en-US', { month: 'short' });
         if (monthlyData[monthName] !== undefined) {
-          monthlyData[monthName] += entry.videosCompleted;
+          monthlyData[monthName] += (entry.totalVideos || 0);
         }
       });
 
@@ -207,7 +294,60 @@ export async function GET(request: NextRequest) {
       }));
     }
 
-    return NextResponse.json(chartData);
+    // Get team statistics with video breakdown
+    let teamStats = null;
+    if (team) {
+      const teamMembers = await User.find({ teamId: team._id }).select('-password');
+      
+      const totalMembers = teamMembers.length;
+      const totalCourseVideos = teamMembers.reduce((sum, member) => sum + (member.courseVideos || 0), 0);
+      const totalMarketingVideos = teamMembers.reduce((sum, member) => sum + (member.marketingVideos || 0), 0);
+      const totalVideos = teamMembers.reduce((sum, member) => sum + (member.totalVideos || 0), 0);
+      const averageProductivity = totalMembers > 0 ? 
+        Math.round(teamMembers.reduce((sum, member) => sum + (member.productivityScore || 0), 0) / totalMembers) : 0;
+      
+      // Calculate weekly and monthly progress
+      const startOfWeek = new Date(now);
+      const dayOfWeek = now.getDay();
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      startOfWeek.setDate(now.getDate() - daysToMonday);
+      startOfWeek.setHours(0, 0, 0, 0);
+      
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      const weeklyEntries = await Entry.find({
+        userId: { $in: team.members },
+        date: { $gte: startOfWeek }
+      });
+      
+      const monthlyEntries = await Entry.find({
+        userId: { $in: team.members },
+        date: { $gte: startOfMonth }
+      });
+      
+      const weeklyVideos = weeklyEntries.reduce((sum, entry) => sum + (entry.totalVideos || 0), 0);
+      const monthlyVideos = monthlyEntries.reduce((sum, entry) => sum + (entry.totalVideos || 0), 0);
+      
+      const weeklyProgress = team.goals?.weeklyTarget > 0 ? Math.round((weeklyVideos / team.goals.weeklyTarget) * 100) : 0;
+      const monthlyProgress = team.goals?.monthlyTarget > 0 ? Math.round((monthlyVideos / team.goals.monthlyTarget) * 100) : 0;
+      
+      teamStats = {
+        totalMembers,
+        totalVideos,
+        totalCourseVideos,
+        totalMarketingVideos,
+        averageProductivity,
+        weeklyProgress,
+        monthlyProgress
+      };
+    }
+
+    return NextResponse.json({
+      period,
+      memberId,
+      chartData,
+      teamStats
+    });
 
   } catch (error) {
     console.error('Error fetching team analytics:', error);

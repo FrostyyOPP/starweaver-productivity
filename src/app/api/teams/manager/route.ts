@@ -46,8 +46,10 @@ export async function GET(request: NextRequest) {
     const totalProductivity = teamMembers.reduce((sum, member) => sum + (member.productivityScore || 0), 0);
     const averageProductivity = totalMembers > 0 ? Math.round(totalProductivity / totalMembers) : 0;
     
-    // Calculate total videos completed
-    const totalVideosCompleted = teamMembers.reduce((sum, member) => sum + (member.videosCompleted || 0), 0);
+    // Calculate total videos completed using new video tracking fields
+    const totalCourseVideos = teamMembers.reduce((sum, member) => sum + (member.courseVideos || 0), 0);
+    const totalMarketingVideos = teamMembers.reduce((sum, member) => sum + (member.marketingVideos || 0), 0);
+    const totalVideosCompleted = teamMembers.reduce((sum, member) => sum + (member.totalVideos || 0), 0);
     
     // Calculate weekly and monthly progress
     const now = new Date();
@@ -67,8 +69,8 @@ export async function GET(request: NextRequest) {
       date: { $gte: startOfMonth }
     });
     
-    const weeklyVideos = weeklyEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0);
-    const monthlyVideos = monthlyEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0);
+    const weeklyVideos = weeklyEntries.reduce((sum, entry) => sum + (entry.totalVideos || 0), 0);
+    const monthlyVideos = monthlyEntries.reduce((sum, entry) => sum + (entry.totalVideos || 0), 0);
     
     const weeklyProgress = team.goals.weeklyTarget > 0 ? Math.round((weeklyVideos / team.goals.weeklyTarget) * 100) : 0;
     const monthlyProgress = team.goals.monthlyTarget > 0 ? Math.round((monthlyVideos / team.goals.monthlyTarget) * 100) : 0;
@@ -100,7 +102,9 @@ export async function GET(request: NextRequest) {
       isActive: member.isActive,
       lastLogin: member.lastLogin,
       productivityScore: member.productivityScore || 0,
-      videosCompleted: member.videosCompleted || 0,
+      courseVideos: member.courseVideos || 0,
+      marketingVideos: member.marketingVideos || 0,
+      totalVideos: member.totalVideos || 0,
       targetVideos: member.targetVideos || 15
     }));
 
@@ -109,6 +113,8 @@ export async function GET(request: NextRequest) {
       activeMembers,
       averageProductivity,
       totalVideosCompleted,
+      totalCourseVideos,
+      totalMarketingVideos,
       weeklyProgress,
       monthlyProgress,
       teamTarget: team.goals.weeklyTarget,

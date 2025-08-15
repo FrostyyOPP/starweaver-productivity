@@ -20,65 +20,127 @@ export async function POST(request: NextRequest) {
 
     const results = {
       entriesCreated: 0,
+      entriesUpdated: 0,
       errors: [] as string[]
     };
 
     // Import Productivity Data
     for (const entry of productivityData) {
       try {
-        // Find the user by email
-        const user = await User.findOne({ email: entry.userEmail });
+        // Find the user by name (since spreadsheet uses names)
+        const user = await User.findOne({ 
+          name: { $regex: new RegExp(entry.teamMember, 'i') },
+          role: 'editor'
+        });
+        
         if (!user) {
-          results.errors.push(`User not found for email: ${entry.userEmail} on ${entry.date}`);
+          results.errors.push(`User not found for name: ${entry.teamMember}`);
+          continue;
+        }
+
+        // Parse the date
+        const entryDate = new Date(entry.date);
+        if (isNaN(entryDate.getTime())) {
+          results.errors.push(`Invalid date format for ${entry.teamMember} on ${entry.date}`);
           continue;
         }
 
         // Check if entry already exists
         const existingEntry = await Entry.findOne({
           userId: user._id,
-          date: new Date(entry.date)
+          date: {
+            $gte: new Date(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate()),
+            $lt: new Date(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate() + 1)
+          }
         });
+
+        // Parse production and marketing values
+        let courseVideos = 0;
+        let marketingVideos = 0;
+        let videoType = 'course' as const;
+
+        // Handle production column
+        if (entry.production !== undefined && entry.production !== null && entry.production !== '') {
+          if (entry.production === 'L' || entry.production === 'l') {
+            // Leave day
+            videoType = 'leave';
+            courseVideos = 0;
+            marketingVideos = 0;
+          } else {
+            const prodValue = parseFloat(entry.production);
+            if (!isNaN(prodValue)) {
+              courseVideos = prodValue;
+            }
+          }
+        }
+
+        // Handle marketing column
+        if (entry.marketing !== undefined && entry.marketing !== null && entry.marketing !== '') {
+          const mktValue = parseFloat(entry.marketing);
+          if (!isNaN(mktValue)) {
+            marketingVideos = mktValue;
+          }
+        }
+
+        // Calculate total videos (course + marketing*6)
+        const totalVideos = courseVideos + (marketingVideos * 6);
+
+        // Set target videos (default 15 per day)
+        const targetVideos = 15;
+
+        // Calculate productivity score
+        let productivityScore = 0;
+        if (videoType !== 'leave' && targetVideos > 0) {
+          productivityScore = Math.min(Math.round((totalVideos / targetVideos) * 100), 100);
+        }
 
         if (existingEntry) {
-          results.errors.push(`Entry already exists for ${entry.userEmail} on ${entry.date}`);
-          continue;
-        }
-
-        // Validate video category
-        const validCategories = ['Course Video', 'Marketing Video', 'Leave'];
-        if (entry.videoCategory && !validCategories.includes(entry.videoCategory)) {
-          results.errors.push(`Invalid video category for ${entry.userEmail} on ${entry.date}. Must be one of: ${validCategories.join(', ')}`);
-          continue;
-        }
-
-        // Calculate productivity score (assuming target is 10 videos per day)
-        const targetVideos = 10;
-        let productivityScore = 0;
-        
-        if (entry.videoCategory === 'Leave') {
-          productivityScore = 0;
+          // Update existing entry
+          existingEntry.courseVideos = courseVideos;
+          existingEntry.marketingVideos = marketingVideos;
+          existingEntry.totalVideos = totalVideos;
+          existingEntry.targetVideos = targetVideos;
+          existingEntry.videoType = videoType;
+          existingEntry.videosCompleted = totalVideos; // Legacy field
+          existingEntry.productivityScore = productivityScore;
+          existingEntry.notes = `Updated from import - Production: ${courseVideos}, Marketing: ${marketingVideos}`;
+          
+          await existingEntry.save();
+          results.entriesUpdated++;
         } else {
-          productivityScore = Math.min((entry.videosCompleted / targetVideos) * 100, 100);
+          // Create new entry
+          await Entry.create({
+            userId: user._id,
+            date: entryDate,
+            courseVideos,
+            marketingVideos,
+            totalVideos,
+            targetVideos,
+            videoType,
+            videosCompleted: totalVideos, // Legacy field
+            productivityScore,
+            notes: `Imported from spreadsheet - Production: ${courseVideos}, Marketing: ${marketingVideos}`,
+            mood: 'good',
+            energyLevel: 3,
+            challenges: [],
+            achievements: [],
+            isCompleted: true
+          });
+
+          results.entriesCreated++;
         }
 
-        // Create entry
-        await Entry.create({
-          userId: user._id,
-          date: new Date(entry.date),
-          videosCompleted: entry.videosCompleted,
-          videoCategory: entry.videoCategory || 'Course Video', // Default to Course Video if not specified
-          notes: entry.notes || '',
-          mood: 5, // Default mood
-          energyLevel: 5, // Default energy level
-          challenges: '',
-          achievements: '',
-          productivityScore: Math.round(productivityScore),
-          weeklyTarget: targetVideos * 5 // 5 days per week
+        // Update user's total video counts
+        await User.findByIdAndUpdate(user._id, {
+          $inc: {
+            courseVideos: courseVideos,
+            marketingVideos: marketingVideos,
+            totalVideos: totalVideos
+          }
         });
 
-        results.entriesCreated++;
       } catch (error) {
-        results.errors.push(`Failed to create entry for ${entry.userEmail} on ${entry.date}: ${error}`);
+        results.errors.push(`Failed to process entry for ${entry.teamMember} on ${entry.date}: ${error}`);
       }
     }
 

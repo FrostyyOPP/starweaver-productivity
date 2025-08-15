@@ -19,6 +19,7 @@ import {
   X
 } from 'lucide-react';
 import ProductivityCharts from './ProductivityCharts';
+import { formatDate } from '@/lib/utils';
 
 interface Entry {
   _id: string;
@@ -41,6 +42,12 @@ interface DashboardStats {
   averageEnergy: number;
   weeklyProgress: number;
   monthlyProgress: number;
+  videoBreakdown?: {
+    courseVideos: number;
+    marketingVideos: number;
+    totalVideos: number;
+    targetVideos: number;
+  };
 }
 
 export default function EditorDashboard() {
@@ -54,7 +61,13 @@ export default function EditorDashboard() {
     averageMood: 0,
     averageEnergy: 0,
     weeklyProgress: 0,
-    monthlyProgress: 0
+    monthlyProgress: 0,
+    videoBreakdown: {
+      courseVideos: 0,
+      marketingVideos: 0,
+      totalVideos: 0,
+      targetVideos: 50
+    }
   });
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('week');
@@ -124,7 +137,13 @@ export default function EditorDashboard() {
           averageMood: 0, // Not provided by API yet
           averageEnergy: 0, // Not provided by API yet
           weeklyProgress: statsData.goalProgress?.weekly?.percentage || 0,
-          monthlyProgress: statsData.goalProgress?.monthly?.percentage || 0
+          monthlyProgress: statsData.goalProgress?.monthly?.percentage || 0,
+          videoBreakdown: statsData.videoBreakdown || {
+            courseVideos: 0,
+            marketingVideos: 0,
+            totalVideos: 0,
+            targetVideos: 50
+          }
         });
       }
     } catch (error) {
@@ -137,23 +156,16 @@ export default function EditorDashboard() {
         averageMood: 0,
         averageEnergy: 0,
         weeklyProgress: 0,
-        monthlyProgress: 0
+        monthlyProgress: 0,
+        videoBreakdown: {
+          courseVideos: 0,
+          marketingVideos: 0,
+          totalVideos: 0,
+          targetVideos: 50
+        }
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'Invalid Date';
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      });
-    } catch (error) {
-      return 'Invalid Date';
     }
   };
 
@@ -199,13 +211,9 @@ export default function EditorDashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
   };
 
   const handleSubmitEntry = async (e: React.FormEvent) => {
@@ -612,8 +620,16 @@ export default function EditorDashboard() {
               
               <div className="stat-card">
                 <div className="stat-title">Videos Completed</div>
-                <div className="stat-value">{stats.totalVideos || 0}</div>
+                <div className="stat-value">{stats.videoBreakdown?.totalVideos || stats.totalVideos || 0}</div>
                 <div className="stat-change positive">+{stats.totalVideos || 0} this week</div>
+                <div className="stat-breakdown">
+                  <span className="breakdown-item">
+                    {stats.videoBreakdown?.courseVideos || 0} Course
+                  </span>
+                  <span className="breakdown-item">
+                    {stats.videoBreakdown?.marketingVideos || 0} Marketing
+                  </span>
+                </div>
               </div>
               
               <div className="stat-card">

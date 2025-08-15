@@ -71,6 +71,15 @@ export async function GET(request: NextRequest) {
         : 0
     };
 
+    // Get user's video breakdown from User model
+    const user = await User.findById(decoded.userId);
+    const videoBreakdown = {
+      courseVideos: user?.courseVideos || 0,
+      marketingVideos: user?.marketingVideos || 0,
+      totalVideos: user?.totalVideos || 0,
+      targetVideos: user?.targetVideos || 50
+    };
+
     // Get recent entries (last 5)
     const recentEntries = await Entry.find({
       userId: decoded.userId
@@ -220,12 +229,26 @@ export async function GET(request: NextRequest) {
         }
       ]);
 
+      // Get team video breakdown from User model
+      const teamVideoBreakdown = await User.aggregate([
+        { $match: { _id: { $in: teamMemberIds } } },
+        {
+          $group: {
+            _id: null,
+            totalCourseVideos: { $sum: { $ifNull: ["$courseVideos", 0] } },
+            totalMarketingVideos: { $sum: { $ifNull: ["$marketingVideos", 0] } },
+            totalVideos: { $sum: { $ifNull: ["$totalVideos", 0] } },
+            averageProductivity: { $avg: { $ifNull: ["$productivityScore", 0] } }
+          }
+        }
+      ]);
+
       teamStats = {
         totalMembers: teamMembers.length,
-        totalVideos: teamEntries.reduce((sum, entry) => sum + entry.videosCompleted, 0),
-        averageProductivity: teamEntries.length > 0
-          ? Math.round(teamEntries.reduce((sum, entry) => sum + entry.productivityScore, 0) / teamEntries.length)
-          : 0,
+        totalVideos: teamVideoBreakdown[0]?.totalVideos || 0,
+        totalCourseVideos: teamVideoBreakdown[0]?.totalCourseVideos || 0,
+        totalMarketingVideos: teamVideoBreakdown[0]?.totalMarketingVideos || 0,
+        averageProductivity: Math.round(teamVideoBreakdown[0]?.averageProductivity || 0),
         memberPerformance: teamMemberPerformance,
         topPerformers: teamMemberPerformance.slice(0, 5)
       };
@@ -269,6 +292,7 @@ export async function GET(request: NextRequest) {
         mood: moodInsights,
         energy: energyInsights
       },
+      videoBreakdown,
       teamStats,
       systemStats
     });

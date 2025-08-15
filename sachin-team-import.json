@@ -1,0 +1,46 @@
+{
+  "users": [
+    {
+      "name": "Ashu Kumar",
+      "email": "ashu.kumar@starweaver.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Prashansha Manral",
+      "email": "prashansha.manral@starweaver.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Astha Sisodia",
+      "email": "astha.sisodia@starweaver.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Kavita Singh",
+      "email": "kavita.singh@starweaver.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Anshika Sahu",
+      "email": "anshika.sahu@starweaver.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Akshay Jaiswal",
+      "email": "akshay.jasiwal@starweaver.com",
+      "password": "Editor@123",
+      "role": "editor"
+    },
+    {
+      "name": "Aman Katiya",
+      "email": "aman.katiyar@starweaver.com",
+      "password": "Editor@123",
+      "role": "editor"
+    }
+  ]
+}

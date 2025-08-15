@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Star, TrendingUp, Clock, Target, Award, Calendar, BarChart3, Users, Plus, LogOut, Shield, UserPlus, UserMinus, X, Upload } from 'lucide-react';
-import AdminProductivityCharts from './AdminProductivityCharts';
-import DataImportModal from './DataImportModal';
+import { Star, TrendingUp, Target, Users, Plus, LogOut, Shield, UserPlus, X, Settings, Download, Upload, ChevronDown, FileText, FileSpreadsheet, FileDown, Activity } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
 interface TeamMember {
   _id: string;
@@ -16,46 +15,11 @@ interface TeamMember {
   lastLogin?: string;
 }
 
-interface Entry {
-  _id: string;
-  date: string;
-  videosCompleted: number;
-  targetVideos: number;
-  productivityScore: number;
-  mood: string;
-  energyLevel: string;
-  challenges: string;
-  achievements: string;
-  userId: string;
-  userName: string;
-}
-
-interface DashboardStats {
-  totalUsers: number;
-  totalEntries: number;
-  totalVideos: number;
-  averageProductivity: number;
-  weeklyProgress: number;
-  monthlyProgress: number;
-}
-
 interface SystemStats {
   totalUsers: number;
   totalEntries: number;
   totalVideos: number;
   averageProductivity: number;
-  usersByRole: Array<{ _id: string; count: number }>;
-}
-
-interface TeamMemberPerformance {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  totalVideos: number;
-  totalEntries: number;
-  averageProductivity: number;
-  lastEntry: string;
 }
 
 interface AddTeamMemberModalProps {
@@ -79,18 +43,27 @@ function AddTeamMemberModal({ isOpen, onClose, onAdd, loading }: AddTeamMemberMo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Add Team Member</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <UserPlus className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="modal-title">Add Team Member</h2>
+              <p className="modal-subtitle">Add a new member to your team</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="modal-close-button">
             <X className="w-5 h-5" />
           </button>
         </div>
         
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+        <form onSubmit={handleSubmit} className="modal-body">
+          <div className="form-field">
+            <label htmlFor="email" className="form-label">
+              <Users className="w-4 h-4" />
               Email Address
             </label>
             <input
@@ -98,31 +71,32 @@ function AddTeamMemberModal({ isOpen, onClose, onAdd, loading }: AddTeamMemberMo
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input"
+              className="form-input"
               placeholder="Enter teammate's email"
               required
               disabled={loading}
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 mt-2">
               We'll check if this user exists and add them to your team
             </p>
           </div>
-          
-          <div className="flex space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-outline flex-1"
-              disabled={loading}
-            >
+
+          <div className="modal-actions">
+            <button type="button" onClick={onClose} className="btn btn-outline" disabled={loading}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn btn-primary flex-1"
-              disabled={loading || !email.trim()}
-            >
-              {loading ? 'Adding...' : 'Add Member'}
+            <button type="submit" className="btn btn-primary" disabled={loading || !email.trim()}>
+              {loading ? (
+                <>
+                  <div className="loading-spinner w-4 h-4"></div>
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  Add Member
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -135,51 +109,44 @@ export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [entries, setEntries] = useState<Entry[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    totalEntries: 0,
-    totalVideos: 0,
-    averageProductivity: 0,
-    weeklyProgress: 0,
-    monthlyProgress: 0
-  });
   const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
-  const [teamMemberPerformance, setTeamMemberPerformance] = useState<TeamMemberPerformance[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState('week');
+  const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'entries'>('overview');
   const [showAddModal, setShowAddModal] = useState(false);
   const [addMemberLoading, setAddMemberLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'entries'>('overview');
-  const [migrating, setMigrating] = useState(false);
-  const [teamFilter, setTeamFilter] = useState<string>('all'); // 'all', 'editor', 'viewer', 'manager'
-  const [showImportModal, setShowImportModal] = useState(false);
+  const [showQuickActionsDropdown, setShowQuickActionsDropdown] = useState(false);
+  const [showExportFormatDropdown, setShowExportFormatDropdown] = useState(false);
+  const [teamFilter, setTeamFilter] = useState<string>('all');
 
   useEffect(() => {
     if (user) {
       fetchAdminData();
     }
-  }, [user, selectedPeriod]);
+  }, [user]);
 
-  // Debug logging for chart data
   useEffect(() => {
-    console.log('🔍 AdminDashboard - Data for charts:', { 
-      entriesLength: entries?.length, 
-      teamMembersLength: teamMembers?.length, 
-      systemStats: systemStats,
-      teamMemberPerformanceLength: teamMemberPerformance?.length
-    });
-  }, [entries, teamMembers, systemStats, teamMemberPerformance]);
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.quick-actions-dropdown') && !target.closest('.quick-actions-button')) {
+        setShowQuickActionsDropdown(false);
+      }
+      if (!target.closest('.export-format-dropdown') && !target.closest('.export-report-button')) {
+        setShowExportFormatDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const fetchAdminData = async () => {
     try {
       setLoading(true);
       
-      // Check if we're on the client side
-      if (typeof window === 'undefined') {
-        return;
-      }
+      if (typeof window === 'undefined') return;
       
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -187,11 +154,8 @@ export default function AdminDashboard() {
         return;
       }
       
-      // Fetch team data
       const teamResponse = await fetch('/api/teams', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       
       if (teamResponse.ok) {
@@ -199,38 +163,13 @@ export default function AdminDashboard() {
         setTeamMembers(teamData.members || []);
       }
 
-      // Fetch all entries (admin can see all)
-      const entriesResponse = await fetch('/api/entries?limit=10', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (entriesResponse.ok) {
-        const entriesData = await entriesResponse.json();
-        setEntries(entriesData.entries || []);
-      }
-
-      // Fetch admin dashboard stats
-      const statsResponse = await fetch(`/api/dashboard?period=${selectedPeriod}&includeTeam=true&includeAllUsers=true`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const statsResponse = await fetch(`/api/dashboard?period=week&includeTeam=true&includeAllUsers=true`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
-        setStats(statsData.userStats || stats);
-        
-        // Set system stats if available
-        if (statsData.systemStats) {
-          setSystemStats(statsData.systemStats);
-        }
-        
-        // Set team stats if available
-        if (statsData.teamStats) {
-          setTeamMemberPerformance(statsData.teamStats.memberPerformance || []);
-        }
+        setSystemStats(statsData.systemStats || null);
       }
     } catch (error) {
       console.error('Error fetching admin data:', error);
@@ -256,7 +195,7 @@ export default function AdminDashboard() {
       if (response.ok) {
         setMessage({ type: 'success', text: 'Team member added successfully!' });
         setShowAddModal(false);
-        fetchAdminData(); // Refresh data
+        fetchAdminData();
       } else {
         const errorData = await response.json();
         setMessage({ type: 'error', text: errorData.error || 'Failed to add team member' });
@@ -274,14 +213,12 @@ export default function AdminDashboard() {
     try {
       const response = await fetch(`/api/teams/${memberId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
       });
       
       if (response.ok) {
         setMessage({ type: 'success', text: 'Team member removed successfully!' });
-        fetchAdminData(); // Refresh data
+        fetchAdminData();
       } else {
         const errorData = await response.json();
         setMessage({ type: 'error', text: errorData.error || 'Failed to remove team member' });
@@ -291,125 +228,52 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDataMigration = async () => {
-    if (migrating) return;
-    setMigrating(true);
-    setMessage(null);
-
-    try {
-      const response = await fetch('/api/migrate', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMessage({ type: 'success', text: `Successfully migrated ${data.migratedEntries} entries.` });
-        fetchAdminData(); // Refresh data
-      } else {
-        const errorData = await response.json();
-        setMessage({ type: 'error', text: errorData.error || 'Failed to migrate data' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'An error occurred during data migration' });
-    } finally {
-      setMigrating(false);
+  const handleQuickAction = (action: string) => {
+    setShowQuickActionsDropdown(false);
+    switch (action) {
+      case 'add-member':
+        setShowAddModal(true);
+        break;
+      case 'export-report':
+        setShowExportFormatDropdown(!showExportFormatDropdown);
+        break;
+      case 'system-settings':
+        alert('⚙️ System settings functionality coming soon...');
+        break;
+      case 'import-data':
+        alert('📤 Data import functionality coming soon...');
+        break;
+      case 'bulk-actions':
+        alert('👥 Bulk actions functionality coming soon...');
+        break;
+      case 'data-migration':
+        alert('🔄 Data migration functionality coming soon...');
+        break;
+      default:
+        break;
     }
   };
 
-  const handleUserImport = async (importData: any) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/import/users', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(importData)
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setMessage({ 
-          type: 'success', 
-          text: `User import completed successfully! ${result.results.usersCreated} users created.` 
-        });
-        fetchAdminData(); // Refresh data
-      } else {
-        const error = await response.json();
-        setMessage({ type: 'error', text: `User import failed: ${error.error}` });
-        throw new Error(error.error);
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: `User import failed: ${error}` });
-      throw error;
-    }
-  };
-
-  const handleDataImport = async (importData: any) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/import/data', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(importData)
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setMessage({ 
-          type: 'success', 
-          text: `Data import completed successfully! ${result.results.entriesCreated} entries created.` 
-        });
-        fetchAdminData(); // Refresh data
-      } else {
-        const error = await response.json();
-        setMessage({ type: 'error', text: `Data import failed: ${error.error}` });
-        throw new Error(error.error);
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: `Data import failed: ${error}` });
-      throw error;
+  const handleExportFormat = (format: string) => {
+    setShowExportFormatDropdown(false);
+    switch (format) {
+      case 'xlsx':
+        alert('📊 Exporting admin data as XLSX file...');
+        break;
+      case 'csv':
+        alert('📊 Exporting admin data as CSV file...');
+        break;
+      case 'pdf':
+        alert('📊 Exporting admin data as PDF file...');
+        break;
+      default:
+        break;
     }
   };
 
   const handleLogout = () => {
     logout();
     router.push('/login');
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getMoodEmoji = (mood: string) => {
-    const moodMap: { [key: string]: string } = {
-      'excellent': '😄',
-      'good': '🙂',
-      'neutral': '😐',
-      'poor': '😔',
-      'terrible': '😢'
-    };
-    return moodMap[mood] || '😐';
-  };
-
-  const getEnergyEmoji = (energy: string) => {
-    const energyMap: { [key: string]: string } = {
-      'high': '⚡',
-      'medium': '🔋',
-      'low': '🪫'
-    };
-    return energyMap[energy] || '🔋';
   };
 
   if (loading) {
@@ -446,18 +310,13 @@ export default function AdminDashboard() {
               <p className="text-lg font-semibold text-white">{user?.name || 'Admin'}</p>
             </div>
             
-            {/* User Initial with Hover Dropdown */}
             <div className="relative group">
               <div className="user-initial">
                 {user?.name?.charAt(0)?.toUpperCase() || 'A'}
               </div>
               
-              {/* Logout Dropdown */}
               <div className="logout-dropdown">
-                <button
-                  onClick={handleLogout}
-                  className="logout-button"
-                >
+                <button onClick={handleLogout} className="logout-button">
                   <LogOut className="w-4 h-4" />
                   <span>Logout</span>
                 </button>
@@ -466,54 +325,102 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="dashboard-main">
-          {/* Period Selector and Add Member Button */}
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Admin Dashboard</h2>
-            <div className="flex space-x-3">
-              <div className="flex space-x-2">
+        {/* Quick Actions Bar */}
+        <div className="quick-actions-bar">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h2 className="text-2xl font-bold text-gray-900">Admin Dashboard</h2>
+              <div className="period-selector">
                 {['week', 'month'].map((period) => (
                   <button
                     key={period}
-                    onClick={() => setSelectedPeriod(period)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                      selectedPeriod === period
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    onClick={() => {}}
+                    className={`period-btn ${period === 'week' ? 'active' : ''}`}
                   >
                     {period.charAt(0).toUpperCase() + period.slice(1)}
                   </button>
                 ))}
               </div>
+            </div>
+            
+            <div className="quick-actions-container">
               <button
-                onClick={() => setShowAddModal(true)}
-                className="btn btn-primary flex items-center space-x-2"
+                onClick={() => setShowQuickActionsDropdown(!showQuickActionsDropdown)}
+                className="btn btn-primary flex items-center space-x-2 quick-actions-button"
               >
-                <UserPlus className="w-4 h-4" />
-                <span>Add Member</span>
+                <Plus className="w-4 h-4" />
+                <span>Quick Actions</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showQuickActionsDropdown ? 'rotate-180' : ''}`} />
               </button>
+              
+              {showQuickActionsDropdown && (
+                <div className="quick-actions-dropdown">
+                  <div className="dropdown-item" onClick={() => handleQuickAction('add-member')}>
+                    <UserPlus className="w-4 h-4" />
+                    <span>Add New Member</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleQuickAction('export-report')}>
+                    <FileDown className="w-4 h-4" />
+                    <span>Export Report</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleQuickAction('system-settings')}>
+                    <Settings className="w-4 h-4" />
+                    <span>System Settings</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleQuickAction('import-data')}>
+                    <Upload className="w-4 h-4" />
+                    <span>Import Data</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleQuickAction('bulk-actions')}>
+                    <Users className="w-4 h-4" />
+                    <span>Bulk Actions</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleQuickAction('data-migration')}>
+                    <Activity className="w-4 h-4" />
+                    <span>Data Migration</span>
+                  </div>
+                </div>
+              )}
+
+              {showExportFormatDropdown && (
+                <div className="export-format-dropdown">
+                  <div className="dropdown-item" onClick={() => handleExportFormat('xlsx')}>
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span>Export as XLSX</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleExportFormat('csv')}>
+                    <FileText className="w-4 h-4" />
+                    <span>Export as CSV</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleExportFormat('pdf')}>
+                    <FileDown className="w-4 h-4" />
+                    <span>Export as PDF</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* Message Display */}
-          {message && (
-            <div className={`mb-6 p-4 rounded-lg ${
-              message.type === 'success' 
-                ? 'bg-green-50 border border-green-200 text-green-700' 
-                : 'bg-red-50 border border-red-200 text-red-700'
-            }`}>
-              {message.text}
-            </div>
-          )}
+        {/* Message Display */}
+        {message && (
+          <div className={`mb-6 p-4 rounded-lg ${
+            message.type === 'success' 
+              ? 'bg-green-50 border border-green-200 text-green-700' 
+              : 'bg-red-50 border border-red-200 text-red-700'
+          }`}>
+            {message.text}
+          </div>
+        )}
 
+        {/* Main Content */}
+        <div className="dashboard-main">
           {/* Tab Navigation */}
           <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
             {[
-              { id: 'overview', label: 'Overview', icon: BarChart3 },
+              { id: 'overview', label: 'Overview', icon: Activity },
               { id: 'team', label: 'Team Management', icon: Users },
-              { id: 'entries', label: 'All Entries', icon: Calendar }
+              { id: 'entries', label: 'All Entries', icon: ChevronDown }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -536,7 +443,6 @@ export default function AdminDashboard() {
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <>
-              {/* Admin Stats Grid */}
               <div className="dashboard-grid">
                 <div className="stat-card">
                   <div className="stat-icon">
@@ -548,7 +454,7 @@ export default function AdminDashboard() {
 
                 <div className="stat-card">
                   <div className="stat-icon">
-                    <BarChart3 className="w-6 h-6" />
+                    <Activity className="w-6 h-6" />
                   </div>
                   <div className="stat-value">{systemStats?.totalEntries || 0}</div>
                   <div className="stat-label">Total Entries</div>
@@ -571,36 +477,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Productivity Charts */}
-              <div className="dashboard-section mt-8">
-                <h3 className="section-title">System Analytics</h3>
-                <AdminProductivityCharts 
-                  entries={entries} 
-                  teamMembers={teamMembers}
-                  systemStats={systemStats}
-                />
-              </div>
-
-              {/* User Distribution by Role */}
-              {systemStats?.usersByRole && systemStats.usersByRole.length > 0 && (
-                <div className="dashboard-section mt-8">
-                  <h3 className="section-title">User Distribution by Role</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {systemStats.usersByRole.map((roleData) => (
-                      <div key={roleData._id} className="card p-4 text-center">
-                        <div className="text-2xl font-bold text-blue-600 mb-2">
-                          {roleData.count}
-                        </div>
-                        <div className="text-sm text-gray-600 capitalize">
-                          {roleData._id} Users
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Quick Actions */}
               <div className="card mt-8">
                 <div className="card-header">
                   <h3 className="card-title">Quick Actions</h3>
@@ -621,28 +497,18 @@ export default function AdminDashboard() {
                       onClick={() => setActiveTab('entries')}
                       className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
                     >
-                      <Calendar className="w-8 h-8 text-purple-600 mb-2" />
+                      <ChevronDown className="w-8 h-8 text-purple-600 mb-2" />
                       <h4 className="font-semibold text-gray-900">View Entries</h4>
                       <p className="text-sm text-gray-600">Monitor all user entries</p>
                     </button>
 
                     <button
-                      onClick={handleDataMigration}
-                      disabled={migrating}
-                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <BarChart3 className="w-8 h-8 text-orange-600 mb-2" />
-                      <h4 className="text-semibold text-gray-900">Restore Data</h4>
-                      <p className="text-sm text-gray-600">Migrate legacy entries to restore data</p>
-                    </button>
-
-                    <button
-                      onClick={() => setShowImportModal(true)}
+                      onClick={() => handleQuickAction('data-migration')}
                       className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
                     >
-                      <Upload className="w-8 h-8 text-blue-600 mb-2" />
-                      <h4 className="font-semibold text-gray-900">Import Data</h4>
-                      <p className="text-sm text-gray-600">Import team structure and productivity data</p>
+                      <Activity className="w-8 h-8 text-orange-600 mb-2" />
+                      <h4 className="text-semibold text-gray-900">Restore Data</h4>
+                      <p className="text-sm text-gray-600">Migrate legacy entries to restore data</p>
                     </button>
                   </div>
                 </div>
@@ -653,7 +519,6 @@ export default function AdminDashboard() {
           {/* Team Management Tab */}
           {activeTab === 'team' && (
             <div className="space-y-6">
-              {/* Team Performance Overview */}
               <div className="card">
                 <div className="card-header">
                   <h3 className="card-title">Team Performance Overview</h3>
@@ -663,29 +528,28 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">
-                        {teamMemberPerformance.length}
+                        {teamMembers.length}
                       </div>
                       <div className="text-sm text-gray-600">Team Members</div>
                     </div>
                     <div className="text-center p-4 bg-green-50 rounded-lg">
                       <div className="text-2xl font-bold text-green-600">
-                        {teamMemberPerformance.reduce((sum, member) => sum + member.totalVideos, 0)}
+                        {teamMembers.reduce((sum, member) => sum + (member.isActive ? 1 : 0), 0)}
                       </div>
-                      <div className="text-sm text-gray-600">Total Videos</div>
+                      <div className="text-sm text-gray-600">Active Members</div>
                     </div>
                     <div className="text-center p-4 bg-purple-50 rounded-lg">
                       <div className="text-2xl font-bold text-purple-600">
-                        {teamMemberPerformance.length > 0 
-                          ? Math.round(teamMemberPerformance.reduce((sum, member) => sum + member.averageProductivity, 0) / teamMemberPerformance.length)
+                        {teamMembers.length > 0 
+                          ? Math.round(teamMembers.reduce((sum, member) => sum + (member.isActive ? 1 : 0), 0) / teamMembers.length * 100)
                           : 0}%
                       </div>
-                      <div className="text-sm text-gray-600">Avg Productivity</div>
+                      <div className="text-sm text-gray-600">Active Rate</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Team Member Performance Table */}
               <div className="card">
                 <div className="card-header">
                   <div className="flex justify-between items-center">
@@ -715,10 +579,10 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="card-content">
-                  {teamMemberPerformance.length === 0 ? (
+                  {teamMembers.length === 0 ? (
                     <div className="text-center py-8">
                       <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">No team member performance data available</p>
+                      <p className="text-gray-500">No team member data available</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -732,16 +596,10 @@ export default function AdminDashboard() {
                               Role
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Total Videos
+                              Status
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Entries
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Avg Productivity
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Last Entry
+                              Last Login
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Actions
@@ -749,7 +607,7 @@ export default function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {teamMemberPerformance
+                          {teamMembers
                             .filter(member => teamFilter === 'all' || member.role === teamFilter)
                             .map((member) => (
                             <tr key={member._id} className="hover:bg-gray-50">
@@ -774,26 +632,14 @@ export default function AdminDashboard() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-semibold text-blue-600">
-                                  {member.totalVideos}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">
-                                  {member.totalEntries}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className={`text-sm font-semibold ${
-                                  member.averageProductivity >= 80 ? 'text-green-600' :
-                                  member.averageProductivity >= 60 ? 'text-yellow-600' :
-                                  'text-red-600'
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  member.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                 }`}>
-                                  {member.averageProductivity}%
-                                </div>
+                                  {member.isActive ? 'Active' : 'Inactive'}
+                                </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {member.lastEntry ? formatDate(member.lastEntry) : 'No entries'}
+                                {member.lastLogin ? formatDate(member.lastLogin) : 'Never'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <button
@@ -801,7 +647,7 @@ export default function AdminDashboard() {
                                   className="text-red-600 hover:text-red-900 transition-colors"
                                   title="Remove team member"
                                 >
-                                  <UserMinus className="w-4 h-4" />
+                                  <X className="w-4 h-4" />
                                 </button>
                               </td>
                             </tr>
@@ -812,62 +658,12 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
-
-              {/* Top Performers */}
-              {teamMemberPerformance.length > 0 && (
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title">Top Performers</h3>
-                    <p className="text-gray-600">Team members with highest video completion rates</p>
-                  </div>
-                  <div className="card-content">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {teamMemberPerformance.slice(0, 3).map((member, index) => (
-                        <div key={member._id} className="p-4 border border-gray-200 rounded-lg text-center">
-                          <div className="flex items-center justify-center mb-3">
-                            {index === 0 && <span className="text-2xl mr-2">🥇</span>}
-                            {index === 1 && <span className="text-2xl mr-2">🥈</span>}
-                            {index === 2 && <span className="text-2xl mr-2">🥉</span>}
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                              {member.name.charAt(0).toUpperCase()}
-                            </div>
-                          </div>
-                          <h4 className="font-semibold text-gray-900 mb-1">{member.name}</h4>
-                          <p className="text-sm text-gray-600 mb-2">{member.role}</p>
-                          <div className="text-lg font-bold text-blue-600 mb-1">
-                            {member.totalVideos} videos
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {member.averageProductivity}% productivity
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Team Analytics Charts */}
-              <div className="card">
-                <div className="card-header">
-                  <h3 className="card-title">Team Analytics</h3>
-                  <p className="text-gray-600">Detailed team performance charts with filtering</p>
-                </div>
-                <div className="card-content">
-                  <AdminProductivityCharts 
-                    entries={entries} 
-                    teamMembers={teamMembers}
-                    systemStats={systemStats}
-                  />
-                </div>
-              </div>
             </div>
           )}
 
           {/* All Entries Tab */}
           {activeTab === 'entries' && (
             <div className="space-y-6">
-              {/* Entries Overview */}
               <div className="card">
                 <div className="card-header">
                   <div className="flex justify-between items-center">
@@ -897,10 +693,10 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="card-content">
-                  {entries.length === 0 ? (
+                  {teamMembers.length === 0 ? (
                     <div className="text-center py-8">
-                      <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">No entries found in the system</p>
+                      <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500">No team members to show entries for.</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -911,83 +707,50 @@ export default function AdminDashboard() {
                               User
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Date
+                              Role
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Videos
+                              Status
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Productivity
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Mood
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Energy
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Notes
+                              Last Login
                             </th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {entries
-                            .filter(entry => {
-                              if (teamFilter === 'all') return true;
-                              // Find the user's role from team members
-                              const user = teamMembers.find(member => member._id === entry.userId);
-                              return user && user.role === teamFilter;
-                            })
-                            .map((entry) => (
-                            <tr key={entry._id} className="hover:bg-gray-50">
+                          {teamMembers
+                            .filter(member => teamFilter === 'all' || member.role === teamFilter)
+                            .map((member) => (
+                            <tr key={member._id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">
-                                    {entry.userName?.charAt(0)?.toUpperCase() || 'U'}
+                                    {member.name.charAt(0)?.toUpperCase() || 'U'}
                                   </div>
                                   <div>
-                                    <div className="text-sm font-medium text-gray-900">{entry.userName || 'Unknown User'}</div>
-                                    <div className="text-sm text-gray-500">{entry.userId}</div>
+                                    <div className="text-sm font-medium text-gray-900">{member.name}</div>
+                                    <div className="text-sm text-gray-500">{member.email}</div>
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatDate(entry.date)}
-                              </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-lg font-bold text-blue-600">
-                                  {entry.videosCompleted || 0}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className={`text-sm font-semibold ${
-                                  (entry.productivityScore || 0) >= 80 ? 'text-green-600' :
-                                  (entry.productivityScore || 0) >= 60 ? 'text-yellow-600' :
-                                  'text-red-600'
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  member.role === 'manager' ? 'bg-green-100 text-green-800' :
+                                  member.role === 'editor' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-gray-100 text-gray-800'
                                 }`}>
-                                  {entry.productivityScore || 0}%
-                                </div>
+                                  {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                                </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center space-x-2">
-                                  <span>{getMoodEmoji(entry.mood || 'neutral')}</span>
-                                  <span className="text-sm text-gray-900 capitalize">
-                                    {entry.mood || 'neutral'}
-                                  </span>
-                                </div>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  member.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {member.isActive ? 'Active' : 'Inactive'}
+                                </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center space-x-2">
-                                  <span>{getEnergyEmoji(entry.energyLevel || 'medium')}</span>
-                                  <span className="text-sm text-gray-900 capitalize">
-                                    {entry.energyLevel || 'medium'}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                                <div className="truncate" title={entry.challenges || entry.achievements || 'No notes'}>
-                                  {entry.challenges || entry.achievements || 'No notes'}
-                                </div>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {member.lastLogin ? formatDate(member.lastLogin) : 'Never'}
                               </td>
                             </tr>
                           ))}
@@ -997,46 +760,6 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
-
-              {/* Entries Summary */}
-              {entries.length > 0 && (
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title">Entries Summary</h3>
-                    <p className="text-gray-600">Quick overview of all entries data</p>
-                  </div>
-                  <div className="card-content">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">
-                          {entries.length}
-                        </div>
-                        <div className="text-sm text-gray-600">Total Entries</div>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">
-                          {entries.reduce((sum, entry) => sum + (entry.videosCompleted || 0), 0)}
-                        </div>
-                        <div className="text-sm text-gray-600">Total Videos</div>
-                      </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
-                        <div className="text-2xl font-bold text-purple-600">
-                          {entries.length > 0 
-                            ? Math.round(entries.reduce((sum, entry) => sum + (entry.productivityScore || 0), 0) / entries.length)
-                            : 0}%
-                        </div>
-                        <div className="text-sm text-gray-600">Avg Productivity</div>
-                      </div>
-                      <div className="text-center p-4 bg-orange-50 rounded-lg">
-                        <div className="text-2xl font-bold text-orange-600">
-                          {new Set(entries.map(entry => entry.userId)).size}
-                        </div>
-                        <div className="text-sm text-gray-600">Active Users</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -1047,14 +770,6 @@ export default function AdminDashboard() {
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddTeamMember}
           loading={addMemberLoading}
-        />
-
-        {/* Data Import Modal */}
-        <DataImportModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onUserImport={handleUserImport}
-          onDataImport={handleDataImport}
         />
       </div>
     </div>

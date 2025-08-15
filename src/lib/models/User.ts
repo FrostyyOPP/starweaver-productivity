@@ -17,6 +17,12 @@ export interface IUser extends mongoose.Document {
   skills?: string[]; // Array of skills
   joinDate?: Date; // When they joined the team
   lastLogin?: Date;
+  // Video tracking fields
+  courseVideos?: number; // Number of course videos (1:1 ratio)
+  marketingVideos?: number; // Number of marketing videos (1:6 ratio)
+  totalVideos?: number; // Calculated total in course video equivalent
+  targetVideos?: number; // Target in course video equivalent
+  productivityScore?: number; // Productivity percentage
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -109,6 +115,33 @@ const userSchema = new mongoose.Schema<IUser>({
   },
   lastLogin: {
     type: Date
+  },
+  // Video tracking fields
+  courseVideos: {
+    type: Number,
+    default: 0,
+    min: [0, 'Course videos cannot be negative']
+  },
+  marketingVideos: {
+    type: Number,
+    default: 0,
+    min: [0, 'Marketing videos cannot be negative']
+  },
+  totalVideos: {
+    type: Number,
+    default: 0,
+    min: [0, 'Total videos cannot be negative']
+  },
+  targetVideos: {
+    type: Number,
+    default: 50,
+    min: [0, 'Target videos cannot be negative']
+  },
+  productivityScore: {
+    type: Number,
+    default: 0,
+    min: [0, 'Productivity score cannot be negative'],
+    max: [100, 'Productivity score cannot exceed 100']
   }
 }, {
   timestamps: true
@@ -134,6 +167,28 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
   } catch (error) {
     return false;
   }
+};
+
+// Method to calculate total videos based on conversion rate
+userSchema.methods.calculateTotalVideos = function(): number {
+  const courseVideoCount = this.courseVideos || 0;
+  const marketingVideoCount = this.marketingVideos || 0;
+  
+  // Marketing videos are worth 6 course videos
+  const marketingVideoEquivalent = marketingVideoCount * 6;
+  
+  return courseVideoCount + marketingVideoEquivalent;
+};
+
+// Method to update productivity score based on video completion
+userSchema.methods.updateProductivityScore = function(): number {
+  const totalCompleted = this.totalVideos || 0;
+  const target = this.targetVideos || 50;
+  
+  if (target === 0) return 0;
+  
+  const percentage = (totalCompleted / target) * 100;
+  return Math.min(Math.round(percentage), 100); // Cap at 100%
 };
 
 // Create indexes

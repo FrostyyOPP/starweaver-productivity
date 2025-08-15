@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { Star, Clock, Target, TrendingUp, Download, Edit3, Calendar, Users, Award, BarChart3 } from 'lucide-react';
 
 const StarweaverDashboard = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [expandedLeaderboard, setExpandedLeaderboard] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    setCurrentTime(new Date());
   }, []);
 
   // Placeholder data - replace with real API data
@@ -17,12 +18,16 @@ const StarweaverDashboard = () => {
   const weeklyData: any[] = [];
 
   useEffect(() => {
+    if (!isClient) return;
+    
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isClient]);
 
   const getShiftTimeRemaining = () => {
-    const now = new Date();
+    if (!currentTime) return "Loading...";
+    
+    const now = currentTime;
     const shiftEnd = new Date();
     shiftEnd.setHours(19, 0, 0, 0); // 7 PM
     
@@ -61,6 +66,20 @@ const StarweaverDashboard = () => {
     </div>
   );
 
+  // Don't render time-sensitive content until client-side
+  if (!isClient) {
+    return (
+      <div className="dashboard-container">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="loading-spinner w-8 h-8 mx-auto mb-4" />
+            <p className="text-gray-300">Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-container">
       {/* Header */}
@@ -98,29 +117,17 @@ const StarweaverDashboard = () => {
                   <h2 className="card-title">Current Shift</h2>
                 </div>
               </div>
-              <div className="card-content space-y-6">
+              <div className="card-content">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-gray-900 mb-2">
-                    {isClient ? currentTime.toLocaleTimeString('en-US', { 
-                      hour12: false, 
-                      hour: '2-digit', 
-                      minute: '2-digit', 
-                      second: '2-digit' 
+                    {currentTime ? currentTime.toLocaleTimeString('en-US', { 
+                      hour12: false,
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
                     }) : '--:--:--'}
                   </div>
-                  <div className="text-lg text-gray-600">
-                    {isClient ? currentTime.toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    }) : 'Loading...'}
-                  </div>
-                </div>
-                <div className="text-center pt-4">
-                  <div className="text-2xl font-semibold text-blue-600">
-                    {isClient ? getShiftTimeRemaining() : 'Loading...'}
-                  </div>
+                  <p className="text-gray-600">{getShiftTimeRemaining()}</p>
                 </div>
               </div>
             </div>

@@ -7,9 +7,14 @@ export interface IEntry extends mongoose.Document {
   shiftStart?: Date;
   shiftEnd?: Date;
   totalHours?: number;
-  // Current fields
-  videosCompleted: number;
+  // New video tracking fields
+  courseVideos: number;
+  marketingVideos: number;
+  totalVideos: number;
   targetVideos: number;
+  videoType: 'course' | 'marketing' | 'leave';
+  // Legacy field for backward compatibility
+  videosCompleted?: number;
   productivityScore: number;
   notes: string;
   mood: 'excellent' | 'good' | 'average' | 'poor';
@@ -46,18 +51,42 @@ const entrySchema = new mongoose.Schema<IEntry>({
     min: [0, 'Total hours cannot be negative'],
     max: [24, 'Total hours cannot exceed 24']
   },
-  // Current fields
-  videosCompleted: {
+  // New video tracking fields
+  courseVideos: {
     type: Number,
-    required: [true, 'Videos completed count is required'],
-    min: [0, 'Videos completed cannot be negative'],
+    required: false,
+    min: [0, 'Course videos cannot be negative'],
+    default: 0
+  },
+  marketingVideos: {
+    type: Number,
+    required: false,
+    min: [0, 'Marketing videos cannot be negative'],
+    default: 0
+  },
+  totalVideos: {
+    type: Number,
+    required: false,
+    min: [0, 'Total videos cannot be negative'],
     default: 0
   },
   targetVideos: {
     type: Number,
-    required: [true, 'Target videos count is required'],
-    min: [1, 'Target videos must be at least 1'],
+    required: false,
+    min: [0, 'Target videos cannot be negative'],
     default: 15
+  },
+  videoType: {
+    type: String,
+    enum: ['course', 'marketing', 'leave'],
+    default: 'course'
+  },
+  // Legacy field for backward compatibility
+  videosCompleted: {
+    type: Number,
+    required: false,
+    min: [0, 'Videos completed cannot be negative'],
+    default: 0
   },
   productivityScore: {
     type: Number,
@@ -97,15 +126,32 @@ const entrySchema = new mongoose.Schema<IEntry>({
   timestamps: true
 });
 
-// Calculate productivity score before saving
+// Calculate total videos and productivity score before saving
 entrySchema.pre('save', function(next) {
-  if (this.isModified('videosCompleted') || this.isModified('targetVideos')) {
-    this.productivityScore = Math.round((this.videosCompleted / this.targetVideos) * 100);
-    // Cap productivity score at 100%
-    if (this.productivityScore > 100) {
-      this.productivityScore = 100;
+  // Calculate total videos based on course and marketing videos
+  if (this.isModified('courseVideos') || this.isModified('marketingVideos')) {
+    const courseCount = this.courseVideos || 0;
+    const marketingCount = this.marketingVideos || 0;
+    // 1 marketing video = 6 course videos
+    this.totalVideos = courseCount + (marketingCount * 6);
+    
+    // Update legacy field for backward compatibility
+    this.videosCompleted = this.totalVideos;
+  }
+
+  // Calculate productivity score
+  if (this.isModified('totalVideos') || this.isModified('targetVideos')) {
+    if (this.videoType === 'leave') {
+      this.productivityScore = 0;
+    } else if (this.targetVideos && this.targetVideos > 0) {
+      this.productivityScore = Math.round((this.totalVideos / this.targetVideos) * 100);
+      // Cap productivity score at 100%
+      if (this.productivityScore > 100) {
+        this.productivityScore = 100;
+      }
     }
   }
+
   next();
 });
 
