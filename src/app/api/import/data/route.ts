@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         // Parse production and marketing values
         let courseVideos = 0;
         let marketingVideos = 0;
-        let videoType = 'course' as const;
+        let videoType: 'course' | 'marketing' | 'leave' = 'course';
 
         // Handle production column
         if (entry.production !== undefined && entry.production !== null && entry.production !== '') {

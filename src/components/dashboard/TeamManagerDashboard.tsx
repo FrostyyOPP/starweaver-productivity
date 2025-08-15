@@ -223,34 +223,34 @@ export default function TeamManagerDashboard() {
 
         {/* Main Content */}
         <div className="dashboard-main">
-          {/* Team Stats Grid */}
+          {/* Team Stats Grid - Data comes from API */}
           <div className="dashboard-grid">
             <div className="stat-card">
               <div className="stat-icon">
                 <Users className="w-6 h-6" />
               </div>
-              <div className="stat-value">8</div>
+              <div className="stat-value">-</div>
               <div className="stat-label">Team Members</div>
             </div>
             <div className="stat-card">
               <div className="stat-icon">
                 <Target className="w-6 h-6" />
               </div>
-              <div className="stat-value">156</div>
+              <div className="stat-value">-</div>
               <div className="stat-label">Total Videos</div>
             </div>
             <div className="stat-card">
               <div className="stat-icon">
                 <TrendingUp className="w-6 h-6" />
               </div>
-              <div className="stat-value">85%</div>
+              <div className="stat-value">-</div>
               <div className="stat-label">Team Productivity</div>
             </div>
             <div className="stat-card">
               <div className="stat-icon">
                 <Activity className="w-6 h-6" />
               </div>
-              <div className="stat-value">78%</div>
+              <div className="stat-value">-</div>
               <div className="stat-label">Weekly Progress</div>
             </div>
           </div>
@@ -278,7 +278,7 @@ export default function TeamManagerDashboard() {
             {activeTab === 'team-management' ? (
               <TeamManagement />
             ) : (
-              <TeamReports period={selectedPeriod} />
+              <TeamReports />
             )}
           </div>
         </div>

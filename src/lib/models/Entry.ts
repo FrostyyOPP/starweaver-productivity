@@ -163,7 +163,7 @@ entrySchema.index({ productivityScore: -1 }); // Entries sorted by productivity
 
 // Virtual for completion percentage
 entrySchema.virtual('completionPercentage').get(function() {
-  return Math.round((this.videosCompleted / this.targetVideos) * 100);
+  return Math.round(((this.videosCompleted || 0) / (this.targetVideos || 1)) * 100);
 });
 
 // Virtual for shift duration in hours (for backward compatibility)
