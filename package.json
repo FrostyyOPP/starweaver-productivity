@@ -7,7 +7,8 @@
     "build": "next build",
     "build:firebase": "next build && next export",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "fix-passwords": "node fix-production-passwords.js"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
