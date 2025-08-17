@@ -7,6 +7,7 @@ import EditorDashboard from '@/components/dashboard/EditorDashboard';
 import ManagerDashboard from '@/components/dashboard/ManagerDashboard';
 import TeamManagerDashboard from '@/components/dashboard/TeamManagerDashboard';
 import AdminDashboard from '@/components/dashboard/AdminDashboard';
+import StarweaverCompanyDashboard from '@/components/dashboard/StarweaverCompanyDashboard';
 import ClientOnly from '@/components/ClientOnly';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Star } from 'lucide-react';
@@ -117,7 +118,7 @@ export default function DashboardPage() {
       </div>
     }>
       <ErrorBoundary>
-        {user.role === 'admin' && <AdminDashboard key="admin" />}
+        {user.role === 'admin' && <StarweaverCompanyDashboard key="company-admin" />}
         {user.role === 'manager' && <ManagerDashboard key="manager" />}
         {user.role === 'team_manager' && <TeamManagerDashboard key="team-manager" />}
         {user.role === 'editor' && <EditorDashboard key="editor" />}
