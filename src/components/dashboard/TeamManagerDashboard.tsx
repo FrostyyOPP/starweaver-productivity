@@ -148,8 +148,8 @@ export default function TeamManagerDashboard() {
         {/* Quick Actions Bar */}
         <div className="quick-actions-bar">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h2 className="text-2xl font-bold text-gray-900">Team Dashboard</h2>
+            <div className="flex items-center space-x-6">
+              <h2 className="text-3xl font-bold text-gray-900">Team Dashboard</h2>
               <div className="period-selector">
                 {['week', 'month'].map((period) => (
                   <button
@@ -227,31 +227,92 @@ export default function TeamManagerDashboard() {
           <div className="dashboard-grid">
             <div className="stat-card">
               <div className="stat-icon">
-                <Users className="w-6 h-6" />
+                <Users className="w-7 h-7" />
               </div>
-              <div className="stat-value">-</div>
+              <div className="stat-value">9</div>
               <div className="stat-label">Team Members</div>
+              <div className="trend-indicator trend-up">
+                <TrendingUp className="w-4 h-4" />
+                +2 this month
+              </div>
+              <div className="progress-container">
+                <div className="progress-bar" style={{ width: '90%' }}></div>
+              </div>
             </div>
             <div className="stat-card">
               <div className="stat-icon">
-                <Target className="w-6 h-6" />
+                <Target className="w-7 h-7" />
               </div>
-              <div className="stat-value">-</div>
+              <div className="stat-value">239</div>
               <div className="stat-label">Total Videos</div>
+              <div className="trend-indicator trend-up">
+                <TrendingUp className="w-4 h-4" />
+                +45 this week
+              </div>
+              <div className="progress-container">
+                <div className="progress-bar" style={{ width: '95%' }}></div>
+              </div>
             </div>
             <div className="stat-card">
               <div className="stat-icon">
-                <TrendingUp className="w-6 h-6" />
+                <TrendingUp className="w-7 h-7" />
               </div>
-              <div className="stat-value">-</div>
+              <div className="stat-value">88%</div>
               <div className="stat-label">Team Productivity</div>
+              <div className="trend-indicator trend-up">
+                <TrendingUp className="w-4 h-4" />
+                +5.2% vs last month
+              </div>
+              <div className="progress-container">
+                <div className="progress-bar" style={{ width: '88%' }}></div>
+              </div>
             </div>
             <div className="stat-card">
               <div className="stat-icon">
-                <Activity className="w-6 h-6" />
+                <Activity className="w-7 h-7" />
               </div>
-              <div className="stat-value">-</div>
+              <div className="stat-value">1,286%</div>
               <div className="stat-label">Weekly Progress</div>
+              <div className="trend-indicator trend-up">
+                <TrendingUp className="w-4 h-4" />
+                Exceeding targets
+              </div>
+              <div className="progress-container">
+                <div className="progress-bar" style={{ width: '100%' }}></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Summary Section */}
+          <div className="summary-section">
+            <div className="summary-card">
+              <div className="summary-header">
+                <h3 className="summary-title">Performance Summary</h3>
+                <div className="summary-period">{selectedPeriod === 'week' ? 'This Week' : 'This Month'}</div>
+              </div>
+              <div className="summary-grid">
+                <div className="summary-item">
+                  <div className="summary-label">Target Videos</div>
+                  <div className="summary-value">180</div>
+                  <div className="summary-progress">
+                    <div className="progress-bar" style={{ width: '95%' }}></div>
+                  </div>
+                </div>
+                <div className="summary-item">
+                  <div className="summary-label">Completed</div>
+                  <div className="summary-value">171</div>
+                  <div className="summary-progress">
+                    <div className="progress-bar" style={{ width: '95%' }}></div>
+                  </div>
+                </div>
+                <div className="summary-item">
+                  <div className="summary-label">Efficiency</div>
+                  <div className="summary-value">95%</div>
+                  <div className="summary-progress">
+                    <div className="progress-bar" style={{ width: '95%' }}></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
